@@ -1,0 +1,8 @@
+# .dockerignore
+.gradle/
+build/
+.idea/
+*.iml
+out/
+target/
+!.dockerignore
