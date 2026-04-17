@@ -20,14 +20,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRegistrationDto dto) {
-        log.info("POST /user/register | Registration attempt: username={}, email={}", dto.username(), dto.email());
-        UserResponseDto response = userService.register(dto);
-        log.info("POST /user/register | Success: id={}", response.id());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
         log.info("GET /user/{} | Fetching user info", id);
