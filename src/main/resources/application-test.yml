@@ -16,3 +16,6 @@ spring:
     validate-on-migrate: false  # ✅ Авто-применение миграций при старте
     clean-disabled: false       # ✅ Разрешить flyway clean для дев-среды
     baseline-on-migrate: false  # ❌ Не использовать базовую версию (если начинаете с нуля)
+logging:
+  file:
+    name: ./logs/library-app.log

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Забирает путь из application.yml. Если не указан → fallback на logs.log -->
+    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="logs.log"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="ELK_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp><fieldName>@timestamp</fieldName></timestamp>
+                <loggerName><fieldName>logger</fieldName></loggerName>
+                <logLevel><fieldName>level</fieldName></logLevel>
+                <threadName><fieldName>thread</fieldName></threadName>
+                <message><fieldName>message</fieldName></message>
+                <mdc/>
+                <arguments/>
+                <stackTrace><fieldName>stack_trace</fieldName></stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ELK_FILE"/>
+    </root>
+</configuration>
