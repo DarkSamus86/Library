@@ -15,3 +15,6 @@ spring:
 logging:
   file:
     name: /var/log/library-app/library-app.log
+jwt:
+  secret: "input-your-secret"
+  expiration: 86400000

@@ -19,3 +19,6 @@ spring:
 logging:
   file:
     name: ./logs/library-app.log
+jwt:
+  secret: "21K0Gom7u7W0QgeGzhNGiBGnhaE5LooZIzuoWz43SEOxQW5oBvTNk5K6RVThx9pxZY31AWLGHkVU5/ZsEJDeuQ=="
+  expiration: 86400000
