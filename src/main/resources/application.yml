@@ -2,4 +2,4 @@ spring:
   application:
     name: Library
   profiles:
-    active: // set your profile
+    active: test
