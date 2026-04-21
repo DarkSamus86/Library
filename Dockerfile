@@ -1,5 +1,5 @@
 # ---------- Stage 1: build ----------
-FROM gradle:8.7-jdk21 AS build
+FROM gradle:8.7-jdk21-alpine AS build
 
 WORKDIR /app
 

@@ -2,4 +2,22 @@ spring:
   application:
     name: Library
   profiles:
-    active: test
+    active: test  # ✅ По умолчанию dev (измените на test/prod при необходимости)
+
+# === Логирование (общее для всех профилей) ===
+logging:
+  file:
+    name: ./logs/library-app.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# === JWT (общий для всех профилей) ===
+jwt:
+  secret: "21K0Gom7u7W0QgeGzhNGiBGnhaE5LooZIzuoWz43SEOxQW5oBvTNk5K6RVThx9pxZY31AWLGHkVU5/ZsEJDeuQ=="
+  expiration: 86400000              # 24 часа
+  refresh-expiration: 604800000     # 7 дней
+
+# === Bucket4j (общий) ===
+bucket4j:
+  enabled: true

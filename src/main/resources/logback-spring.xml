@@ -1,42 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+<configuration scan="true" scanPeriod="30 seconds">
 
-    <!-- Забирает путь из application.yml. Если не указан → fallback на logs.log -->
-    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="logs.log"/>
+    <!-- === Базовые настройки === -->
+    <property name="LOG_PATH" value="./logs"/>
+    <property name="LOG_FILE_NAME" value="library-app"/>
+    <property name="MAX_HISTORY" value="30"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
-        </encoder>
-    </appender>
-
-    <appender name="ELK_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_FILE}</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
-        </rollingPolicy>
-
+    <!-- === Консоль (JSON для отладки) === -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
-                <timestamp><fieldName>@timestamp</fieldName></timestamp>
-                <loggerName><fieldName>logger</fieldName></loggerName>
-                <logLevel><fieldName>level</fieldName></logLevel>
-                <threadName><fieldName>thread</fieldName></threadName>
-                <message><fieldName>message</fieldName></message>
-                <mdc/>
-                <arguments/>
-                <stackTrace><fieldName>stack_trace</fieldName></stackTrace>
+                <timestamp><timeZone>UTC</timeZone></timestamp>
+                <logLevel/>
+                <message/>
+                <loggerName/>
+                <threadName/>
             </providers>
         </encoder>
     </appender>
 
+    <!-- === Основной файл: дата в имени, БЕЗ сжатия === -->
+    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- ✅ Активный файл с датой (без времени) -->
+        <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- ✅ При смене дня старый файл переименовывается с датой -->
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- ✅ Хранить последние 30 дней -->
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+
+            <!-- ✅ БЕЗ сжатия в .gz (просто .log файлы) -->
+        </rollingPolicy>
+
+        <!-- ✅ JSON Encoder для ELK -->
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>Asia/Yekaterinburg</timeZone>
+                    <pattern>yyyy-MM-dd HH:mm:ss.SSS</pattern>
+                </timestamp>
+                <logLevel/>
+                <message/>
+                <loggerName>
+                    <shortenedClassNameLength>40</shortenedClassNameLength>
+                </loggerName>
+                <threadName/>
+                <mdc/>
+                <arguments/>
+                <stackTrace>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                        <maxLength>2048</maxLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+                <!-- Дополнительные метки для ELK -->
+                <pattern>
+                    <pattern>
+                        {
+                        "app_name": "library-app",
+                        "service": "library",
+                        "environment": "${ENVIRONMENT:-development}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- === Аудит-лог (отдельный файл) === -->
+    <appender name="AUDIT_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/audit.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/audit-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>Asia/Yekaterinburg</timeZone>
+                    <pattern>yyyy-MM-dd HH:mm:ss.SSS</pattern>
+                </timestamp>
+                <logLevel/>
+                <message/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                        {
+                        "app_name": "library-app",
+                        "log_type": "audit",
+                        "service": "library"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- === Асинхронная запись === -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="FILE_JSON"/>
+    </appender>
+
+    <!-- === Настройки логгеров === -->
+    <logger name="audit" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_JSON"/>
+        <appender-ref ref="CONSOLE_JSON"/>
+    </logger>
+
+    <logger name="org.darksamus86.library" level="DEBUG"/>
+    <logger name="org.springframework.data.redis" level="WARN"/>
+    <logger name="org.flywaydb" level="INFO"/>
+
+    <!-- === Корневой логгер === -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ELK_FILE"/>
+        <appender-ref ref="ASYNC_FILE"/>
+        <appender-ref ref="CONSOLE_JSON"/>
     </root>
+
 </configuration>
