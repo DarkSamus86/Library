@@ -109,6 +109,26 @@ public class UserService {
         log.info("User deleted by admin: id={}", id);
     }
 
+    /**
+     * Только смена пароля (без побочной логики)
+     */
+    @Transactional
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+
+        // Проверка текущего пароля
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new PasswordMismatchException();
+        }
+
+        // Установка нового пароля
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        log.info("Password changed for user: {}", username);
+    }
+
     private void addRoleToUser(User user, Role role) {
         UserRole userRole = UserRole.builder().user(user).role(role).build();
         user.getUserRoles().add(userRole);

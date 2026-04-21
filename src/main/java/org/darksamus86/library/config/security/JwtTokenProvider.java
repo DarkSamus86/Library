@@ -78,6 +78,19 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
+    /**
+     * Генерация Refresh-токена (живет дольше)
+     */
+
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) // 7 дней
+                .signWith(getSignInKey())
+                .compact();
+    }
+
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
