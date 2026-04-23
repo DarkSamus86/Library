@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: // url
-    username: // username
-    password: // password
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     redis:
-      host: localhost
-      port: 6379
-      password: ${REDIS_PASSWORD:}  # пустая строка если без пароля
+      host: ${REDIS_HOST:}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD:}
       database: 0
       timeout: 2000ms
   jpa:
@@ -20,7 +20,7 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 600000  # 10 минут по умолчанию
+      time-to-live: 600000
       cache-null-values: false
   flyway:
     enabled: true
@@ -28,5 +28,5 @@ logging:
   file:
     name: /var/log/library-app/library-app.log
 jwt:
-  secret: "input-your-secret"
-  expiration: 86400000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
