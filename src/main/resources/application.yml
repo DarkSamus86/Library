@@ -2,7 +2,7 @@ spring:
   application:
     name: Library
   profiles:
-    active: test  # ✅ По умолчанию dev (измените на test/prod при необходимости)
+    active: dev
 
 # === Логирование (общее для всех профилей) ===
 logging:
@@ -14,9 +14,9 @@ logging:
 
 # === JWT (общий для всех профилей) ===
 jwt:
-  secret: "21K0Gom7u7W0QgeGzhNGiBGnhaE5LooZIzuoWz43SEOxQW5oBvTNk5K6RVThx9pxZY31AWLGHkVU5/ZsEJDeuQ=="
-  expiration: 86400000              # 24 часа
-  refresh-expiration: 604800000     # 7 дней
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 # === Bucket4j (общий) ===
 bucket4j:
