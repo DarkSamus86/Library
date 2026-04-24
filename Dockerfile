@@ -11,7 +11,6 @@ RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY src .
-COPY .env .
 
 # 🔹 Добавьте --stacktrace для лучшей отладки при ошибках
 RUN ./gradlew bootJar --no-daemon --stacktrace
