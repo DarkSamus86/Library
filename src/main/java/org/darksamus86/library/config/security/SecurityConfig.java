@@ -31,7 +31,13 @@ public class SecurityConfig {
                         // Публичные эндпоинты
                         .requestMatchers("/auth/**").permitAll()
                         // Swagger (если используете)
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/webjars/**"
+                        ).permitAll()
                         // Админские ручки
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                         // Всё остальное требует аутентификации
