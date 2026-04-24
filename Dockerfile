@@ -10,7 +10,7 @@ RUN chmod +x ./gradlew
 # 🔹 Важно: используйте wrapper, а не системный gradle
 RUN ./gradlew dependencies --no-daemon
 
-COPY src .
+COPY src ./src
 
 # 🔹 Добавьте --stacktrace для лучшей отладки при ошибках
 RUN ./gradlew bootJar --no-daemon --stacktrace
