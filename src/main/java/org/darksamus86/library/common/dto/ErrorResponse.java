@@ -1,10 +1,9 @@
-package org.darksamus86.library.user.dto.response;
+package org.darksamus86.library.common.dto;
 
 import java.time.LocalDateTime;
 
 public record ErrorResponse(
         int status,
         String message,
-        LocalDateTime timestamp,
-        String path
+        LocalDateTime timestamp
 ) {}

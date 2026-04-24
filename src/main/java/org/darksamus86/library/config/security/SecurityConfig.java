@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 👈 Включает @PreAuthorize, @PostAuthorize
+@EnableMethodSecurity // Включает @PreAuthorize, @PostAuthorize
 @RequiredArgsConstructor
 public class SecurityConfig {
 

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -60,6 +61,7 @@ public class BookController {
      * POST /api/v1/books
      */
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseGetBook> createBook(
             @Valid @RequestBody CreateBookRequest request) {
         log.info("Creating new book: {}", request.title());
@@ -98,10 +100,24 @@ public class BookController {
      * Удалить книгу (мягкое удаление)
      * DELETE /api/v1/books/1
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         log.info("Deleting book with id: {}", id);
         bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    /**
+     * Удалить книгу (хард удаление)
+     * DELETE /api/v1/books/hard-delete/1
+     */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/hard-delete/{id}")
+    public ResponseEntity<Void> hardDeleteBook(@PathVariable Long id) {
+        log.info("Hard deleting book with id: {}", id);
+        bookService.hardDeleteBook(id);
         return ResponseEntity.noContent().build();
     }
 

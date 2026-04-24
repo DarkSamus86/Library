@@ -3,7 +3,7 @@ package org.darksamus86.library.user.common.handler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.darksamus86.library.user.common.exceptions.*;
-import org.darksamus86.library.user.dto.response.ErrorResponse; // 👈 Ваш DTO
+import org.darksamus86.library.user.dto.response.UserErrorResponse; // 👈 Ваш DTO
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class UserExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(UserNotFoundException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleNotFound(UserNotFoundException ex, HttpServletRequest req) {
         log.warn("404 Not Found: {}", ex.getMessage());
         return build(HttpStatus.NOT_FOUND, ex, req);
     }
@@ -28,7 +28,7 @@ public class UserExceptionHandler {
             UsernameAlreadyExistsException.class,
             RoleAlreadyAssignedException.class
     })
-    public ResponseEntity<ErrorResponse> handleConflict(UserModuleException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleConflict(UserModuleException ex, HttpServletRequest req) {
         log.warn("409 Conflict: {}", ex.getMessage());
         return build(HttpStatus.CONFLICT, ex, req);
     }
@@ -38,13 +38,13 @@ public class UserExceptionHandler {
             WeakPasswordException.class,
             InvalidTokenException.class
     })
-    public ResponseEntity<ErrorResponse> handleBadRequest(UserModuleException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleBadRequest(UserModuleException ex, HttpServletRequest req) {
         log.warn("400 Bad Request: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex, req);
     }
 
     @ExceptionHandler(PasswordMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorized(PasswordMismatchException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleUnauthorized(PasswordMismatchException ex, HttpServletRequest req) {
         log.warn("401 Unauthorized: {}", ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, ex, req);
     }
@@ -55,32 +55,32 @@ public class UserExceptionHandler {
             CannotRemoveLastAdminRoleException.class,
             UserDeletionForbiddenException.class
     })
-    public ResponseEntity<ErrorResponse> handleForbidden(UserModuleException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleForbidden(UserModuleException ex, HttpServletRequest req) {
         log.warn("403 Forbidden: {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, ex, req);
     }
 
     @ExceptionHandler(RoleNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleServerRoleError(RoleNotFoundException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleServerRoleError(RoleNotFoundException ex, HttpServletRequest req) {
         log.error("500 Server Error (Config): {}", ex.getMessage());
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex, req);
     }
 
     @ExceptionHandler(VerificationTokenExpiredException.class)
-    public ResponseEntity<ErrorResponse> handleGone(VerificationTokenExpiredException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleGone(VerificationTokenExpiredException ex, HttpServletRequest req) {
         log.warn("410 Gone: {}", ex.getMessage());
         return build(HttpStatus.GONE, ex, req);
     }
 
     @ExceptionHandler(OptimisticLockException.class)
-    public ResponseEntity<ErrorResponse> handleConcurrency(OptimisticLockException ex, HttpServletRequest req) {
+    public ResponseEntity<UserErrorResponse> handleConcurrency(OptimisticLockException ex, HttpServletRequest req) {
         log.warn("409 Conflict (Concurrent Modification): {}", ex.getMessage());
         return build(HttpStatus.CONFLICT, ex, req);
     }
 
-    private ResponseEntity<ErrorResponse> build(HttpStatus status, Exception ex, HttpServletRequest req) {
+    private ResponseEntity<UserErrorResponse> build(HttpStatus status, Exception ex, HttpServletRequest req) {
         return ResponseEntity.status(status).body(
-                new ErrorResponse(
+                new UserErrorResponse(
                         status.value(),
                         ex.getMessage(),
                         LocalDateTime.now(),
