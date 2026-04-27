@@ -23,10 +23,12 @@ create table roles (
 );
 
 create table user_roles (
+                            id bigserial primary key,
                             user_id bigint not null,
                             role_id bigint not null,
 
-                            primary key (user_id, role_id),
+                            constraint uq_user_roles_user_role
+                                unique (user_id, role_id),
 
                             constraint fk_user_roles_user
                                 foreign key (user_id) references users(id) on delete cascade,
@@ -34,7 +36,6 @@ create table user_roles (
                             constraint fk_user_roles_role
                                 foreign key (role_id) references roles(id) on delete cascade
 );
-
 -- =========================
 -- PERMISSIONS
 -- =========================
