@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dev-library
-          image: registry.robotov.studio/dev-library:1.0.1
+          image: registry.robotov.studio/dev-library:1.0.2
           ports:
             - containerPort: 8080
               name: http
