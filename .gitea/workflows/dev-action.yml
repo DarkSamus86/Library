@@ -18,4 +18,4 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/ -n dev
-          kubectl rollout status deployment/dev-library -n dev --timeout=120s
+          kubectl rollout status deployment/dev-library -n dev --timeout=180s

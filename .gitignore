@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 .env
 k8s/secret.yaml
+k8s/ingress.yaml
 
 ### STS ###
 .apt_generated
