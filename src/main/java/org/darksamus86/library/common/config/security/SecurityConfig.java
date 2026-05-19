@@ -1,4 +1,4 @@
-package org.darksamus86.library.config.security;
+package org.darksamus86.library.common.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

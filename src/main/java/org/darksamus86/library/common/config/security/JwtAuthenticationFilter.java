@@ -1,4 +1,4 @@
-package org.darksamus86.library.config.security;
+package org.darksamus86.library.common.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

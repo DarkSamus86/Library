@@ -1,4 +1,4 @@
-package org.darksamus86.library.config;
+package org.darksamus86.library.common.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
