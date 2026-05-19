@@ -45,9 +45,6 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-    // === RATE LIMITING ===
-    implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.12.0")
-
     // === LOGGING ===
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
 
