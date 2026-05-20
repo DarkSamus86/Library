@@ -4,35 +4,24 @@ on:
     branches: [dev]
 jobs:
   build-and-deploy:
-    runs-on: host
+    runs-on: k8s-runner-1
     steps:
       - name: Checkout code
         run: |
-          git clone http://ro8otov:${{ secrets.runner_token }}@gitea.local:3000/darksamus/Library.git .
+          git clone http://oauth2:${{ secrets.runner_token }}@gitea-http.gitea.svc.cluster.local:3000/darksamus/Library.git .
           git checkout ${{ github.sha }}
       - name: Build and push Docker image
         run: |
-          kubectl apply -f - <<POD
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: kaniko-build
-            namespace: dev
-          spec:
-            containers:
-            - name: kaniko
-              image: gcr.io/kaniko-project/executor:latest
-              args:
-              - --context=http://oauth2:${{ secrets.runner_token }}@gitea-http.gitea.svc.cluster.local:3000/darksamus/Library.git#${{ github.sha }}
-              - --dockerfile=Dockerfile
-              - --destination=registry.robotov.site/dev-library:1.0.2
-              - --skip-tls-verify
-              - --cache=true
-            restartPolicy: Never
-          POD
-          kubectl wait --for=condition=complete --timeout=300s pod/kaniko-build -n dev
-          kubectl logs kaniko-build -n dev
-          kubectl delete pod kaniko-build -n dev --ignore-not-found
+          kubectl run kaniko --image=gcr.io/kaniko-project/executor:latest \
+            -n dev --restart=Never \
+            -- /kaniko/executor \
+            --context=http://oauth2:${{ secrets.runner_token }}@gitea-http.gitea.svc.cluster.local:3000/darksamus/Library.git#${{ github.sha }} \
+            --dockerfile=Dockerfile \
+            --destination=registry.robotov.site/dev-library:1.0.2 \
+            --skip-tls-verify --cache=true
+          kubectl wait --for=condition=complete --timeout=300s pod/kaniko -n dev
+          kubectl logs kaniko -n dev
+          kubectl delete pod kaniko -n dev --ignore-not-found
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/ -n dev
