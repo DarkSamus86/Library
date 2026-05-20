@@ -4,24 +4,17 @@ on:
     branches: [dev]
 jobs:
   build-and-deploy:
-    runs-on: k8s-runner-1
+    runs-on: host
     steps:
       - name: Checkout code
         run: |
-          git clone http://oauth2:${{ secrets.runner_token }}@gitea-http.gitea.svc.cluster.local:3000/darksamus/Library.git .
+          git config --global http.sslVerify false
+          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.local/darksamus/Library.git .
           git checkout ${{ github.sha }}
       - name: Build and push Docker image
         run: |
-          kubectl run kaniko --image=gcr.io/kaniko-project/executor:latest \
-            -n dev --restart=Never \
-            -- /kaniko/executor \
-            --context=http://oauth2:${{ secrets.runner_token }}@gitea-http.gitea.svc.cluster.local:3000/darksamus/Library.git#${{ github.sha }} \
-            --dockerfile=Dockerfile \
-            --destination=registry.robotov.site/dev-library:1.0.2 \
-            --skip-tls-verify --cache=true
-          kubectl wait --for=condition=complete --timeout=300s pod/kaniko -n dev
-          kubectl logs kaniko -n dev
-          kubectl delete pod kaniko -n dev --ignore-not-found
+          docker build -t registry.robotov.site/dev-library:1.0.2 .
+          docker push registry.robotov.site/dev-library:1.0.2
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/ -n dev
