@@ -43,7 +43,7 @@ public class BookServiceTest {
         bookEntity.setId(bookId);
         bookEntity.setTitle("Test Book");
 
-        ResponseGetBook expectedDto = new ResponseGetBook("Test Book", null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        ResponseGetBook expectedDto = new ResponseGetBook(1L, "Test Book", null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(bookEntity));
         when(bookMapper.toResponse(bookEntity)).thenReturn(expectedDto);
@@ -85,7 +85,7 @@ public class BookServiceTest {
         newBook.setId(1L);
         newBook.setTitle("New Book");
 
-        ResponseGetBook responseDto = new ResponseGetBook("New Book", "Desc",
+        ResponseGetBook responseDto = new ResponseGetBook(1L, "New Book", "Desc",
                 new BigDecimal("10"), null, null, 5, 2023);
 
         when(bookRepository.existsByIsbn("123")).thenReturn(false);

@@ -66,13 +66,5 @@ public class AuthController {
         authService.logout(username);
     }
 
-    /**
-     * Тестовый эндпоинт для проверки валидности JWT
-     * Доступен только аутентифицированным пользователям
-     */
-    @GetMapping("/me")
-    public ResponseEntity<String> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        return ResponseEntity.ok("JWT is valid! Token belongs to: " + token.substring(0, 10) + "...");
-    }
+
 }

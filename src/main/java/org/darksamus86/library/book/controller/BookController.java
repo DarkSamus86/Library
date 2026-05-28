@@ -68,7 +68,7 @@ public class BookController {
         ResponseGetBook createdBook = bookService.createBook(request);
 
         return ResponseEntity
-                .created(URI.create("/api/v1/books/" + createdBook.hashCode())) // Лучше использовать реальный ID
+                .created(URI.create("/api/v1/books/" + createdBook.id()))
                 .body(createdBook);
     }
 
