@@ -16,6 +16,7 @@ public class BookMapper {
         }
 
         return new ResponseGetBook(
+                book.getId(),
                 book.getTitle(),
                 book.getDescription(),
                 book.getPrice(),

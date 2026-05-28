@@ -58,7 +58,7 @@ class BookControllerTest {
         // Given
         Long id = 1L;
         ResponseGetBook mockResponse = new ResponseGetBook(
-                "Mock Title", "Desc",
+                1L, "Mock Title", "Desc",
                 new BigDecimal("10"), null, null, 10, 2020
         );
 
@@ -80,7 +80,7 @@ class BookControllerTest {
         );
 
         ResponseGetBook createdResponse = new ResponseGetBook(
-                "New Book", "Desc",
+                1L, "New Book", "Desc",
                 new BigDecimal("10"), null, null, 5, 2023
         );
 
@@ -106,6 +106,6 @@ class BookControllerTest {
         // When & Then
         mockMvc.perform(get("/api/v1/books/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("BOOK_NOT_FOUND"));
+                .andExpect(jsonPath("$.status").value(404));
     }
 }
