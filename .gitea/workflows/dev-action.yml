@@ -13,8 +13,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Build and push Docker image
         run: |
-          docker build -t registry.robotov.site/dev-library:1.0.2 .
-          docker push registry.robotov.site/dev-library:1.0.2
+          docker build -t registry.robotov.site/dev-library:1.0.3 .
+          docker push registry.robotov.site/dev-library:1.0.3
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/ -n dev
