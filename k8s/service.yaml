@@ -4,11 +4,10 @@ metadata:
   name: dev-library-service
   namespace: dev
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: dev-library
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
-      nodePort: 30080
+      targetPort: 8080
