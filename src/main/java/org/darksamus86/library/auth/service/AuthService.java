@@ -5,8 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.darksamus86.library.auth.dto.request.LoginRequestDto;
 import org.darksamus86.library.auth.dto.response.AuthResponseDto;
-
-import org.darksamus86.library.config.security.JwtTokenProvider;
+import org.darksamus86.library.common.config.security.JwtTokenProvider;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
 import org.darksamus86.library.user.security.CustomUserDetailsService;
 import org.darksamus86.library.user.service.UserService;
