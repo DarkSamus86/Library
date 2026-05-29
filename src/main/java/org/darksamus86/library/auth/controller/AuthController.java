@@ -8,7 +8,7 @@ import org.darksamus86.library.auth.dto.request.LoginRequestDto;
 import org.darksamus86.library.auth.dto.request.RefreshRequestDto;
 import org.darksamus86.library.auth.dto.response.AuthResponseDto;
 import org.darksamus86.library.auth.service.AuthService;
-import org.darksamus86.library.config.security.JwtTokenProvider;
+import org.darksamus86.library.common.config.security.JwtTokenProvider;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
