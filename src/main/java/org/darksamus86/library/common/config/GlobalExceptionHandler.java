@@ -7,6 +7,7 @@ import org.darksamus86.library.common.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,11 +42,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(403, "Access Denied: You don't have permission", LocalDateTime.now()));
     }
 
-    // ошибка логина
+    // ошибка логина: неверные данные
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse(401, "Invalid username or password", LocalDateTime.now()));
+    }
+
+    // пользователь деактивирован
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabled(DisabledException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(403, "Account is disabled", LocalDateTime.now()));
     }
 
     // любая другая ошибка (500)
