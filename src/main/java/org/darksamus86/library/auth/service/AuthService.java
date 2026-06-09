@@ -11,6 +11,7 @@ import org.darksamus86.library.user.dto.request.UserRegistrationDto;
 import org.darksamus86.library.user.security.CustomUserDetailsService;
 import org.darksamus86.library.user.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -90,6 +91,12 @@ public class AuthService {
 
         // 2. Загружаем пользователя через UserDetailsService
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        if (!userDetails.isEnabled()) {
+            log.warn("Disabled user attempted to refresh token: {}", username);
+            tokenStorageService.revokeToken(username);
+            throw new DisabledException("Account is disabled");
+        }
 
         // 3. Генерируем новый Access Token
         String newAccessToken = jwtTokenProvider.generateToken(userDetails);
