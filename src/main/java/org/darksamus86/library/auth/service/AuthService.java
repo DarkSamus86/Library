@@ -40,6 +40,7 @@ public class AuthService {
     /**
      * Аутентификация и генерация JWT
      */
+    @Transactional(readOnly = true)
     public AuthResponseDto login(LoginRequestDto dto) {
         log.debug("Authenticating user: {}", dto.username());
 
@@ -81,6 +82,7 @@ public class AuthService {
     /**
      * Обновление токенов
      */
+    @Transactional(readOnly = true)
     public AuthResponseDto refresh(String username, String refreshToken) {
         // 1. Проверяем токен в Redis
         if (!tokenStorageService.isValidToken(username, refreshToken)) {

@@ -33,4 +33,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
             "LEFT JOIN FETCH ur.role r " +
             "WHERE u.id = :id")
     Optional<User> findByIdWithRoles(@Param("id") Long id);
+
+    @Query("SELECT COUNT(p) > 0 FROM PaymentMethod p WHERE p.user.id = :userId")
+    boolean hasPaymentMethods(@Param("userId") Long userId);
 }
