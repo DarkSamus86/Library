@@ -12,10 +12,17 @@ jobs:
           git clone https://ro8otov:${{ secrets.runner_token }}@gitea.local/darksamus/Library.git .
           git checkout ${{ github.sha }}
       - name: Build and push Docker image
+        env:
+          SHA: ${{ github.sha }}
         run: |
-          docker build -t registry.robotov.site/dev-library:1.0.3 .
-          docker push registry.robotov.site/dev-library:1.0.3
+          TAG=${SHA:0:7}
+          docker build -t registry.robotov.site/dev-library:$TAG .
+          docker push registry.robotov.site/dev-library:$TAG
       - name: Deploy to Kubernetes
+        env:
+          SHA: ${{ github.sha }}
         run: |
-          kubectl apply -f k8s/ -n dev
+          TAG=${SHA:0:7}
+          sed -i "s|image:.*dev-library:.*|image: registry.robotov.site/dev-library:$TAG|" k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -n dev
           kubectl rollout status deployment/dev-library -n dev --timeout=180s
