@@ -48,7 +48,7 @@ public class UserService {
 
     // ✅ ПОЛУЧЕНИЕ ПОЛЬЗОВАТЕЛЯ
     public UserResponseDto getUserById(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdWithRoles(id)
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
         log.debug("Fetched user info: id={}", id);
         return userMapper.toResponse(user);
@@ -56,7 +56,7 @@ public class UserService {
 
     // ✅ ОБНОВЛЕНИЕ ПРОФИЛЯ
     public UserResponseDto updateUser(Long id, UserUpdateDto dto) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdWithRoles(id)
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
 
         // Обязательная проверка текущего пароля
@@ -97,15 +97,15 @@ public class UserService {
 
     // ✅ УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (только админ)
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(String.valueOf(id));
+        }
 
-        // Проверка на наличие связанных данных (например, активные книги/платежи)
-        if (!user.getPaymentMethods().isEmpty()) {
+        if (userRepository.hasPaymentMethods(id)) {
             throw new UserDeletionForbiddenException(id, "User has active payment methods. Consider deactivation instead.");
         }
 
-        userRepository.delete(user);
+        userRepository.deleteById(id);
         log.info("User deleted by admin: id={}", id);
     }
 
