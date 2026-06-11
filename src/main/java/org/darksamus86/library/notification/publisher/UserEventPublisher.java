@@ -2,7 +2,7 @@ package org.darksamus86.library.notification.publisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.darksamus86.library.notification.config.RabbitMQConfig;
+import org.darksamus86.library.config.RabbitMQConfig;
 import org.darksamus86.library.notification.event.UserRegisteredEvent;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package org.darksamus86.library.notification.config;
+package org.darksamus86.library.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
