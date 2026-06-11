@@ -86,7 +86,10 @@ class AdminServiceTest {
         when(userRepository.countByIsActive(true)).thenReturn(4L);
         when(bookRepository.count()).thenReturn(20L);
         when(bookRepository.countByIsActive(true)).thenReturn(18L);
-        when(roleRepository.findAll()).thenReturn(List.of(adminRole, userRole));
+        when(roleRepository.countUsersByRole()).thenReturn(List.of(
+                new Object[]{"ROLE_ADMIN", 1L},
+                new Object[]{"ROLE_USER", 2L}
+        ));
 
         AdminDashboardResponse result = adminService.getDashboard();
 
@@ -101,7 +104,7 @@ class AdminServiceTest {
         verify(userRepository).countByIsActive(true);
         verify(bookRepository).count();
         verify(bookRepository).countByIsActive(true);
-        verify(roleRepository).findAll();
+        verify(roleRepository).countUsersByRole();
     }
 
     @Test
