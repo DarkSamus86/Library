@@ -36,11 +36,9 @@ public class AdminService {
         long totalBooks = bookRepository.count();
         long activeBooks = bookRepository.countByIsActive(true);
 
-        List<Role> allRoles = roleRepository.findAll();
         Map<String, Long> usersByRole = new LinkedHashMap<>();
-        for (Role role : allRoles) {
-            long count = role.getUserRoles().size();
-            usersByRole.put(role.getName(), count);
+        for (Object[] row : roleRepository.countUsersByRole()) {
+            usersByRole.put((String) row[0], (Long) row[1]);
         }
 
         log.info("Admin dashboard fetched");
