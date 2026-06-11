@@ -1,3 +1,10 @@
+server:
+  tomcat:
+    max-keep-alive-requests: 200
+    connection-timeout: 10000
+    threads:
+      max: 50
+
 spring:
   # === PostgreSQL ===
   datasource:
@@ -6,11 +13,14 @@ spring:
     password: 123
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 5000
+      max-lifetime: 1800000
 
   # === JPA ===
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate  # ✅ Flyway управляет схемой
     show-sql: true

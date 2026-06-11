@@ -9,6 +9,8 @@ import org.darksamus86.library.book.entity.Book;
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
 import org.darksamus86.library.book.mapper.BookMapper;
 import org.darksamus86.library.book.repository.BookRepo;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,13 +29,13 @@ public class BookService {
     /**
      * Получить книгу по ID
      */
+    @Cacheable(value = "books", key = "#id")
     public ResponseGetBook getBookById(Long id) {
         log.debug("Fetching book by id: {}", id);
 
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
 
-        // Опционально: проверяем активность
         if (Boolean.FALSE.equals(book.getIsActive())) {
             throw new BookNotFoundException(id);
         }
@@ -67,6 +69,7 @@ public class BookService {
      * Создать новую книгу
      */
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public ResponseGetBook createBook(CreateBookRequest request) {
         log.info("Creating new book: {}", request.title());
 
@@ -86,6 +89,7 @@ public class BookService {
      * Обновить книгу
      */
     @Transactional
+    @CacheEvict(value = "books", key = "#id", allEntries = true)
     public ResponseGetBook updateBook(Long id, UpdateBookRequest request) {
         log.info("Updating book with id: {}", id);
 
@@ -110,6 +114,7 @@ public class BookService {
      * Удалить книгу (мягкое удаление - деактивация)
      */
     @Transactional
+    @CacheEvict(value = "books", key = "#id", allEntries = true)
     public void deleteBook(Long id) {
         log.info("Deleting book with id: {}", id);
 
@@ -127,6 +132,7 @@ public class BookService {
      * Полное удаление книги
      */
     @Transactional
+    @CacheEvict(value = "books", key = "#id", allEntries = true)
     public void hardDeleteBook(Long id) {
         log.warn("Hard deleting book with id: {}", id);
 
