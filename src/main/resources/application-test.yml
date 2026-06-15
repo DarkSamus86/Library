@@ -51,6 +51,18 @@ spring:
           min-idle: 2
           max-wait: -1ms
 
+  # === RabbitMQ ===
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: library
+    password: library
+
+  # === Mail (для dev/test — используем fake SMTP) ===
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+
   # === Cache ===
   cache:
     type: redis

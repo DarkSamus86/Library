@@ -24,6 +24,27 @@ services:
     volumes:
       - redis_data:/data
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: library-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: library
+      RABBITMQ_DEFAULT_PASS: library
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: library-mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   app:
     build: .
     container_name: library-app
@@ -46,3 +67,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
