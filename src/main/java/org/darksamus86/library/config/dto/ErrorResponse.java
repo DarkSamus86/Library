@@ -1,4 +1,4 @@
-package org.darksamus86.library.common.dto;
+package org.darksamus86.library.config.dto;
 
 import java.time.LocalDateTime;
 
