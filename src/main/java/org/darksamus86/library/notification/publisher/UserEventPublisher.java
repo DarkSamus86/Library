@@ -17,7 +17,7 @@ public class UserEventPublisher {
     public void publishUserRegistered(UserRegisteredEvent event) {
         log.info("Publishing UserRegisteredEvent: userId={}, email={}", event.userId(), event.email());
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.NOTIFICATION_EXCHANGE,
                 RabbitMQConfig.ROUTING_KEY_USER_REGISTERED,
                 event
         );
