@@ -24,5 +24,11 @@ spring:
       time-to-live: 600000
       cache-null-values: false
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
   flyway:
     enabled: true
