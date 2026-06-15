@@ -37,6 +37,14 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: library-mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   app:
     build: .
     container_name: library-app
