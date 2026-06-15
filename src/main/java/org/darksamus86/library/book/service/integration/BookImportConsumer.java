@@ -27,25 +27,18 @@ public class BookImportConsumer {
     public void handleBookImport(OpenLibraryBook bookData) {
         log.debug("Received book for import: {}", bookData.title());
 
-        String isbn = null;
         if (bookData.isbn() != null && !bookData.isbn().isEmpty()) {
-            isbn = bookData.isbn().stream()
-                    .filter(i -> i != null && !i.isBlank())
-                    .findFirst()
-                    .orElse(null);
-
-            if (isbn != null) {
-                isbn = isbn.replace("-", "").replace(" ", "").trim();
-                if (bookRepo.findByIsbn(isbn).isPresent()) {
-                    log.warn("Book with ISBN {} already exists, skipping", isbn);
-                    return;
-                }
+            String isbn = bookData.isbn().getFirst();
+            if (bookRepo.findByIsbn(isbn).isPresent()) {
+                log.warn("Book with ISBN {} already exists, skipping", isbn);
+                return;
             }
         }
 
         Book book = Book.builder()
                 .title(bookData.title())
-                .isbn(isbn)
+                .isbn(bookData.isbn() != null && !bookData.isbn().isEmpty()
+                        ? bookData.isbn().getFirst() : null)
                 .publishedYear(bookData.first_publish_year())
                 .coverUrl(bookData.cover_i() != null
                         ? "https://covers.openlibrary.org/b/id/" + bookData.cover_i() + "-L.jpg"
