@@ -3,6 +3,7 @@ package org.darksamus86.library.book.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
@@ -73,10 +74,11 @@ public class BookController {
     }
 
     /**
-     * Обновить книгу
+     * Обновить книгу (только ADMIN)
      * PUT /api/v1/books/1
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseGetBook> updateBook(
             @PathVariable Long id,
             @Valid @RequestBody UpdateBookRequest request) {
@@ -85,15 +87,29 @@ public class BookController {
     }
 
     /**
-     * Частичное обновление книги
+     * Частичное обновление книги (только ADMIN)
      * PATCH /api/v1/books/1
      */
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseGetBook> partialUpdateBook(
             @PathVariable Long id,
             @RequestBody UpdateBookRequest request) {
         log.info("Partially updating book with id: {}", id);
         return ResponseEntity.ok(bookService.updateBook(id, request));
+    }
+
+    /**
+     * Установить цены для книги (только ADMIN)
+     * PATCH /api/v1/books/1/prices
+     */
+    @PatchMapping("/{id}/prices")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseGetBook> updateBookPrices(
+            @PathVariable Long id,
+            @Valid @RequestBody BookPricesRequest request) {
+        log.info("Updating prices for book with id: {}", id);
+        return ResponseEntity.ok(bookService.updateBookPrices(id, request));
     }
 
     /**
