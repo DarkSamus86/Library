@@ -11,7 +11,7 @@ public record CreateBookRequest(
 
         String description,
 
-        @Size(max = 13, message = "ISBN должен содержать до 13 символов")
+        @Size(max = 50, message = "ISBN не должен превышать 50 символов")
         String isbn,
 
         @NotNull(message = "Цена обязательна")

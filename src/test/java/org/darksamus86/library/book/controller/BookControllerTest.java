@@ -2,6 +2,7 @@ package org.darksamus86.library.book.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.darksamus86.library.book.common.handler.BookExceptionHandler;
+import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
 import org.darksamus86.library.book.service.BookService;
@@ -22,6 +23,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -107,5 +109,29 @@ class BookControllerTest {
         mockMvc.perform(get("/api/v1/books/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void updateBookPrices_ShouldReturn200() throws Exception {
+        // Given
+        Long id = 1L;
+        BookPricesRequest request = new BookPricesRequest(
+                new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00")
+        );
+        ResponseGetBook response = new ResponseGetBook(
+                1L, "Book Title", "Desc",
+                new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00"), 5, 2023
+        );
+
+        when(bookService.updateBookPrices(eq(id), any(BookPricesRequest.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(patch("/api/v1/books/{id}/prices", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value(19.99))
+                .andExpect(jsonPath("$.rentalPrice").value(3.99))
+                .andExpect(jsonPath("$.depositAmount").value(10.00));
     }
 }
