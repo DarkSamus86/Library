@@ -2,6 +2,7 @@ package org.darksamus86.library.book.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
@@ -73,12 +74,18 @@ public class BookService {
     public ResponseGetBook createBook(CreateBookRequest request) {
         log.info("Creating new book: {}", request.title());
 
+        String isbn = request.isbn();
+        if (isbn != null) {
+            isbn = isbn.replace("-", "").replace(" ", "").trim();
+        }
+
         // Проверка на дубликат ISBN
-        if (request.isbn() != null && bookRepository.existsByIsbn(request.isbn())) {
+        if (isbn != null && bookRepository.existsByIsbn(isbn)) {
             throw new IllegalArgumentException("Книга с таким ISBN уже существует");
         }
 
         Book book = bookMapper.toEntity(request);
+        book.setIsbn(isbn); // Сохраняем очищенный ISBN
         Book savedBook = bookRepository.save(book);
 
         log.info("Book created successfully with id: {}", savedBook.getId());
@@ -96,17 +103,49 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
 
+        String isbn = request.isbn();
+        if (isbn != null) {
+            isbn = isbn.replace("-", "").replace(" ", "").trim();
+        }
+
         // Проверка на уникальность ISBN (если он меняется)
-        if (request.isbn() != null && !request.isbn().equals(book.getIsbn())) {
-            if (bookRepository.existsByIsbn(request.isbn())) {
+        if (isbn != null && !isbn.equals(book.getIsbn())) {
+            if (bookRepository.existsByIsbn(isbn)) {
                 throw new IllegalArgumentException("Книга с таким ISBN уже существует");
             }
         }
 
         bookMapper.updateEntityFromRequest(request, book);
+        if (request.isbn() != null) {
+            book.setIsbn(isbn); // Сохраняем очищенный ISBN
+        }
         Book updatedBook = bookRepository.save(book);
 
         log.info("Book updated successfully with id: {}", updatedBook.getId());
+        return bookMapper.toResponse(updatedBook);
+    }
+
+    /**
+     * Установить цены для книги
+     */
+    @Transactional
+    @CacheEvict(value = "books", key = "#id", allEntries = true)
+    public ResponseGetBook updateBookPrices(Long id, BookPricesRequest request) {
+        log.info("Updating prices for book with id: {}", id);
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+
+        book.setPrice(request.price());
+        if (request.rentalPrice() != null) {
+            book.setRentalPrice(request.rentalPrice());
+        }
+        if (request.depositAmount() != null) {
+            book.setDepositAmount(request.depositAmount());
+        }
+
+        Book updatedBook = bookRepository.save(book);
+        log.info("Book prices updated successfully for id: {}", updatedBook.getId());
         return bookMapper.toResponse(updatedBook);
     }
 
