@@ -57,6 +57,26 @@ spec:
                 secretKeyRef:
                   name: library-secrets
                   key: JWT_SECRET
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: RABBITMQ_HOST
+            - name: RABBITMQ_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: RABBITMQ_PORT
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: RABBITMQ_PASSWORD
           resources:
             requests:
               memory: "512Mi"
