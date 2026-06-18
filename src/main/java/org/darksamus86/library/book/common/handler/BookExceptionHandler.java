@@ -2,7 +2,7 @@ package org.darksamus86.library.book.common.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
-import org.darksamus86.library.common.dto.ErrorResponse;
+import org.darksamus86.library.config.dto.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

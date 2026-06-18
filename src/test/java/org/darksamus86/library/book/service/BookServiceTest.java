@@ -1,7 +1,9 @@
 package org.darksamus86.library.book.service;
 
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
+import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
+import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
 import org.darksamus86.library.book.entity.Book;
 import org.darksamus86.library.book.mapper.BookMapper;
@@ -99,5 +101,66 @@ public class BookServiceTest {
         // Then
         assertThat(result).isNotNull();
         verify(bookRepository).save(any(Book.class));
+    }
+
+    @Test
+    @DisplayName("Должен очистить ISBN от дефисов и пробелов при создании книги")
+    void createBook_WithHyphenatedIsbn_ShouldSanitizeIsbn() {
+        // Given
+        CreateBookRequest request = new CreateBookRequest("New Book", "Desc", " 978-0-13-468599-1 ",
+                new BigDecimal("10"), null, null, 5, 2023, "url");
+
+        Book bookEntity = new Book();
+        bookEntity.setId(1L);
+        bookEntity.setTitle("New Book");
+        bookEntity.setIsbn("9780134685991");
+
+        ResponseGetBook responseDto = new ResponseGetBook(1L, "New Book", "Desc",
+                new BigDecimal("10"), null, null, 5, 2023);
+
+        when(bookRepository.existsByIsbn("9780134685991")).thenReturn(false);
+        when(bookMapper.toEntity(request)).thenReturn(bookEntity);
+        when(bookRepository.save(any(Book.class))).thenReturn(bookEntity);
+        when(bookMapper.toResponse(bookEntity)).thenReturn(responseDto);
+
+        // When
+        bookService.createBook(request);
+
+        // Then
+        verify(bookRepository).existsByIsbn("9780134685991");
+        verify(bookRepository).save(bookEntity);
+        assertThat(bookEntity.getIsbn()).isEqualTo("9780134685991");
+    }
+
+    @Test
+    @DisplayName("Должен успешно установить цены для книги")
+    void updateBookPrices_ShouldUpdatePricesAndReturnResponse() {
+        // Given
+        Long bookId = 1L;
+        BookPricesRequest request = new BookPricesRequest(
+                new BigDecimal("299.99"), new BigDecimal("49.99"), new BigDecimal("100.00")
+        );
+
+        Book existingBook = new Book();
+        existingBook.setId(bookId);
+        existingBook.setTitle("Existing Book");
+        existingBook.setPrice(BigDecimal.ZERO);
+
+        ResponseGetBook responseDto = new ResponseGetBook(bookId, "Existing Book", "Desc",
+                new BigDecimal("299.99"), new BigDecimal("49.99"), new BigDecimal("100.00"), 5, 2023);
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any(Book.class))).thenReturn(existingBook);
+        when(bookMapper.toResponse(existingBook)).thenReturn(responseDto);
+
+        // When
+        ResponseGetBook result = bookService.updateBookPrices(bookId, request);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(existingBook.getPrice()).isEqualTo(new BigDecimal("299.99"));
+        assertThat(existingBook.getRentalPrice()).isEqualTo(new BigDecimal("49.99"));
+        assertThat(existingBook.getDepositAmount()).isEqualTo(new BigDecimal("100.00"));
+        verify(bookRepository).save(existingBook);
     }
 }
