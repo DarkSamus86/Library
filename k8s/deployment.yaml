@@ -77,6 +77,26 @@ spec:
                 secretKeyRef:
                   name: library-secrets
                   key: RABBITMQ_PASSWORD
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: MAIL_HOST
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: MAIL_PORT
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: library-secrets
+                  key: MAIL_PASSWORD
           resources:
             requests:
               memory: "512Mi"
