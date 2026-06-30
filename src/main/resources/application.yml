@@ -2,7 +2,7 @@ spring:
   application:
     name: Library
   profiles:
-    active: test  # ✅ По умолчанию dev (измените на test/prod при необходимости)
+    active: dev
 
 # === Логирование (общее для всех профилей) ===
 logging:
