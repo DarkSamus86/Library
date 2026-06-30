@@ -2,6 +2,7 @@ package org.darksamus86.library.book.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.book.dto.request.BookImportRequest;
 import org.darksamus86.library.book.service.integration.BookImportProducer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,22 +18,19 @@ public class BookImportController {
     private final BookImportProducer producer;
 
     @PostMapping
-    public ResponseEntity<Void> importBooks(
-            @RequestParam(required = false) String query,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false, defaultValue = "20") Integer limit) {
+    public ResponseEntity<Void> importBooks(@RequestBody BookImportRequest request) {
+        log.info("Admin requested book import - query: {}, title: {}, author: {}, limit: {}",
+                request.query(), request.title(), request.author(), request.limit());
 
-        log.info("Admin requested book import - query: {}, title: {}, author: {}, limit: {}", query, title, author, limit);
-
-        if ((query == null || query.isBlank()) &&
-                (title == null || title.isBlank()) &&
-                (author == null || author.isBlank())) {
+        if ((request.query() == null || request.query().isBlank()) &&
+                (request.title() == null || request.title().isBlank()) &&
+                (request.author() == null || request.author().isBlank())) {
             log.warn("Missing search parameters for book import");
             return ResponseEntity.badRequest().build();
         }
 
-        producer.importBooks(query, title, author, limit);
+        int limit = request.limit() != null ? request.limit() : 20;
+        producer.importBooks(request.query(), request.title(), request.author(), limit);
         return ResponseEntity.accepted().build();
     }
 }
