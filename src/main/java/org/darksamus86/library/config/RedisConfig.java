@@ -1,4 +1,4 @@
-package org.darksamus86.library.common.config;
+package org.darksamus86.library.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
