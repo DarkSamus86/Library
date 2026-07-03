@@ -15,10 +15,6 @@ logging:
     org.apache.coyote.http11.Http11Processor: WARN
 # === JWT (общий для всех профилей) ===
 jwt:
-  secret: "21K0Gom7u7W0QgeGzhNGiBGnhaE5LooZIzuoWz43SEOxQW5oBvTNk5K6RVThx9pxZY31AWLGHkVU5/ZsEJDeuQ=="
+  secret: ${JWT_SECRET:}
   expiration: 86400000              # 24 часа
   refresh-expiration: 604800000     # 7 дней
-
-# === Bucket4j (общий) ===
-bucket4j:
-  enabled: true
