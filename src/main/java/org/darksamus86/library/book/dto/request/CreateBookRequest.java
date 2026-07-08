@@ -14,23 +14,29 @@ public record CreateBookRequest(
         @Size(max = 50, message = "ISBN не должен превышать 50 символов")
         String isbn,
 
-        @NotNull(message = "Цена обязательна")
+        @NotNull(message = "Цена покупки обязательна")
         @DecimalMin(value = "0.0", message = "Цена не может быть отрицательной")
-        BigDecimal price,
+        BigDecimal pricePurchase,
 
         @DecimalMin(value = "0.0", message = "Цена аренды не может быть отрицательной")
-        BigDecimal rentalPrice,
+        BigDecimal priceRental,
 
         @DecimalMin(value = "0.0", message = "Залог не может быть отрицательным")
         BigDecimal depositAmount,
 
-        @NotNull(message = "Количество на складе обязательно")
+        @NotNull(message = "Количество физических копий обязательно")
         @Min(value = 0, message = "Количество не может быть отрицательным")
-        Integer stockCount,
+        Integer physicalInventory,
+
+        Integer digitalLicenses,
+
+        Boolean hasPhysical,
+
+        Boolean hasDigital,
 
         @Min(value = 1000, message = "Некорректный год издания")
         @Max(value = 2099, message = "Некорректный год издания")
         Integer publishedYear,
 
-        String coverUrl
+        String coverImageUrl
 ) {}

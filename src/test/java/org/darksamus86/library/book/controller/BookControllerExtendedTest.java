@@ -52,7 +52,7 @@ class BookControllerExtendedTest {
 
     @Test
     void getAllBooks_WithPagination_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, BigDecimal.TEN, null, null, 5, 2023);
+        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
         Page<ResponseGetBook> page = new PageImpl<>(List.of(book), PageRequest.of(0, 10), 1);
         when(bookService.getAllBooks(any())).thenReturn(page);
 
@@ -64,7 +64,7 @@ class BookControllerExtendedTest {
 
     @Test
     void getAllBooksList_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, BigDecimal.TEN, null, null, 5, 2023);
+        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
         when(bookService.getAllBooks()).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/v1/books/all"))
@@ -74,8 +74,8 @@ class BookControllerExtendedTest {
 
     @Test
     void updateBook_ShouldReturn200() throws Exception {
-        UpdateBookRequest request = new UpdateBookRequest("Updated Title", null, null, null, null, null, null, null, null, null);
-        ResponseGetBook response = new ResponseGetBook(1L, "Updated Title", null, BigDecimal.TEN, null, null, 5, 2023);
+        UpdateBookRequest request = new UpdateBookRequest("Updated Title", null, null, null, null, null, null, -1, true, true, null, null, null, null, null);
+        ResponseGetBook response = new ResponseGetBook(1L, "Updated Title", null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
         when(bookService.updateBook(eq(1L), any(UpdateBookRequest.class))).thenReturn(response);
 
         mockMvc.perform(put("/api/v1/books/1")
@@ -87,8 +87,8 @@ class BookControllerExtendedTest {
 
     @Test
     void partialUpdateBook_ShouldReturn200() throws Exception {
-        UpdateBookRequest request = new UpdateBookRequest("Partial Title", null, null, null, null, null, null, null, null, null);
-        ResponseGetBook response = new ResponseGetBook(1L, "Partial Title", null, BigDecimal.TEN, null, null, 5, 2023);
+        UpdateBookRequest request = new UpdateBookRequest("Partial Title", null, null, null, null, null, null, -1, true, true, null, null, null, null, null);
+        ResponseGetBook response = new ResponseGetBook(1L, "Partial Title", null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
         when(bookService.updateBook(eq(1L), any(UpdateBookRequest.class))).thenReturn(response);
 
         mockMvc.perform(patch("/api/v1/books/1")
@@ -116,7 +116,7 @@ class BookControllerExtendedTest {
 
     @Test
     void searchBooks_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Java Book", null, BigDecimal.TEN, null, null, 5, 2023);
+        ResponseGetBook book = new ResponseGetBook(1L, "Java Book", null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
         when(bookService.searchBooksByTitle("java")).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/v1/books/search").param("title", "java"))
@@ -126,7 +126,7 @@ class BookControllerExtendedTest {
 
     @Test
     void createBook_ShouldReturn400_WhenValidationFails() throws Exception {
-        String invalidRequest = "{\"title\":\"\",\"price\":-1}";
+        String invalidRequest = "{\"title\":\"\",\"pricePurchase\":-1}";
 
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -136,7 +136,7 @@ class BookControllerExtendedTest {
 
     @Test
     void updateBookPrices_ShouldReturn400_WhenPriceIsNull() throws Exception {
-        String invalidRequest = "{\"price\":null}";
+        String invalidRequest = "{\"pricePurchase\":null}";
 
         mockMvc.perform(patch("/api/v1/books/1/prices")
                         .contentType(MediaType.APPLICATION_JSON)

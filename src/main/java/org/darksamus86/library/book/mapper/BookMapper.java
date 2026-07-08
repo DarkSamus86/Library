@@ -19,11 +19,19 @@ public class BookMapper {
                 book.getId(),
                 book.getTitle(),
                 book.getDescription(),
-                book.getPrice(),
-                book.getRentalPrice(),
+                book.getPricePurchase(),
+                book.getPriceRental(),
                 book.getDepositAmount(),
-                book.getStockCount(),
-                book.getPublishedYear()
+                book.getHasPhysical(),
+                book.getHasDigital(),
+                book.getPhysicalInventory(),
+                book.getDigitalLicenses(),
+                book.getIsAvailableForRent(),
+                book.getIsAvailableForPurchase(),
+                book.getPublishedYear(),
+                book.getCoverImageUrl(),
+                book.getTotalRentalsCount(),
+                book.getTotalPurchasesCount()
         );
     }
 
@@ -37,13 +45,21 @@ public class BookMapper {
                 .title(request.title())
                 .description(request.description())
                 .isbn(request.isbn())
-                .price(request.price())
-                .rentalPrice(request.rentalPrice())
+                .pricePurchase(request.pricePurchase())
+                .priceRental(request.priceRental())
                 .depositAmount(request.depositAmount())
-                .stockCount(request.stockCount())
+                .physicalInventory(request.physicalInventory())
+                .digitalLicenses(request.digitalLicenses() != null ? request.digitalLicenses() : -1)
+                .hasPhysical(request.hasPhysical() != null ? request.hasPhysical() : true)
+                .hasDigital(request.hasDigital() != null ? request.hasDigital() : true)
+                .isAvailableForRent(true)
+                .isAvailableForPurchase(true)
+                .totalRentalsCount(0)
+                .totalPurchasesCount(0)
                 .publishedYear(request.publishedYear())
-                .coverUrl(request.coverUrl())
-                .isActive(true) // По умолчанию активна
+                .coverImageUrl(request.coverImageUrl())
+                .isActive(true)
+                .version(0)
                 .build();
     }
 
@@ -62,23 +78,38 @@ public class BookMapper {
         if (request.isbn() != null) {
             book.setIsbn(request.isbn());
         }
-        if (request.price() != null) {
-            book.setPrice(request.price());
+        if (request.pricePurchase() != null) {
+            book.setPricePurchase(request.pricePurchase());
         }
-        if (request.rentalPrice() != null) {
-            book.setRentalPrice(request.rentalPrice());
+        if (request.priceRental() != null) {
+            book.setPriceRental(request.priceRental());
         }
         if (request.depositAmount() != null) {
             book.setDepositAmount(request.depositAmount());
         }
-        if (request.stockCount() != null) {
-            book.setStockCount(request.stockCount());
+        if (request.physicalInventory() != null) {
+            book.setPhysicalInventory(request.physicalInventory());
+        }
+        if (request.digitalLicenses() != null) {
+            book.setDigitalLicenses(request.digitalLicenses());
+        }
+        if (request.hasPhysical() != null) {
+            book.setHasPhysical(request.hasPhysical());
+        }
+        if (request.hasDigital() != null) {
+            book.setHasDigital(request.hasDigital());
+        }
+        if (request.isAvailableForRent() != null) {
+            book.setIsAvailableForRent(request.isAvailableForRent());
+        }
+        if (request.isAvailableForPurchase() != null) {
+            book.setIsAvailableForPurchase(request.isAvailableForPurchase());
         }
         if (request.publishedYear() != null) {
             book.setPublishedYear(request.publishedYear());
         }
-        if (request.coverUrl() != null) {
-            book.setCoverUrl(request.coverUrl());
+        if (request.coverImageUrl() != null) {
+            book.setCoverImageUrl(request.coverImageUrl());
         }
         if (request.isActive() != null) {
             book.setIsActive(request.isActive());

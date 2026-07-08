@@ -29,7 +29,7 @@ class CreateBookRequestValidationTest {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
                 new BigDecimal("10.00"), new BigDecimal("2.00"), new BigDecimal("5.00"),
-                5, 2023, "http://cover.url"
+                5, -1, true, true, 2023, "http://cover.url"
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
@@ -42,7 +42,7 @@ class CreateBookRequestValidationTest {
     void blankTitle_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "", "Description", "1234567890",
-                new BigDecimal("10.00"), null, null, 5, 2023, null
+                new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
@@ -52,38 +52,25 @@ class CreateBookRequestValidationTest {
     }
 
     @Test
-    @DisplayName("Should fail when price is null")
-    void nullPrice_ShouldHaveViolation() {
+    @DisplayName("Should fail when pricePurchase is null")
+    void nullPricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
-                null, null, null, 5, 2023, null
+                null, null, null, 5, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
 
         assertThat(violations).isNotEmpty();
-        assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("price"))).isTrue();
+        assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("pricePurchase"))).isTrue();
     }
 
     @Test
-    @DisplayName("Should fail when price is negative")
-    void negativePrice_ShouldHaveViolation() {
+    @DisplayName("Should fail when pricePurchase is negative")
+    void negativePricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
-                new BigDecimal("-1.00"), null, null, 5, 2023, null
-        );
-
-        Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
-
-        assertThat(violations).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("Should fail when stockCount is null")
-    void nullStockCount_ShouldHaveViolation() {
-        CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                new BigDecimal("10.00"), null, null, null, 2023, null
+                new BigDecimal("-1.00"), null, null, 5, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
@@ -92,11 +79,24 @@ class CreateBookRequestValidationTest {
     }
 
     @Test
-    @DisplayName("Should fail when stockCount is negative")
-    void negativeStockCount_ShouldHaveViolation() {
+    @DisplayName("Should fail when physicalInventory is null")
+    void nullPhysicalInventory_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
-                new BigDecimal("10.00"), null, null, -1, 2023, null
+                new BigDecimal("10.00"), null, null, null, -1, true, true, 2023, null
+        );
+
+        Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
+
+        assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Should fail when physicalInventory is negative")
+    void negativePhysicalInventory_ShouldHaveViolation() {
+        CreateBookRequest request = new CreateBookRequest(
+                "Test Book", "Description", "1234567890",
+                new BigDecimal("10.00"), null, null, -1, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
@@ -110,7 +110,7 @@ class CreateBookRequestValidationTest {
         String longTitle = "A".repeat(256);
         CreateBookRequest request = new CreateBookRequest(
                 longTitle, "Description", "1234567890",
-                new BigDecimal("10.00"), null, null, 5, 2023, null
+                new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);

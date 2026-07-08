@@ -6,12 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record BookPricesRequest(
-        @NotNull(message = "Цена обязательна")
+        @NotNull(message = "Цена покупки обязательна")
         @DecimalMin(value = "0.0", message = "Цена не может быть отрицательной")
-        BigDecimal price,
+        BigDecimal pricePurchase,
 
         @DecimalMin(value = "0.0", message = "Цена аренды не может быть отрицательной")
-        BigDecimal rentalPrice,
+        BigDecimal priceRental,
 
         @DecimalMin(value = "0.0", message = "Залог не может быть отрицательным")
         BigDecimal depositAmount

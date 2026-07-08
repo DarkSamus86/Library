@@ -12,22 +12,32 @@ public record UpdateBookRequest(
         String isbn,
 
         @DecimalMin(value = "0.0", message = "Цена не может быть отрицательной")
-        BigDecimal price,
+        BigDecimal pricePurchase,
 
         @DecimalMin(value = "0.0", message = "Цена аренды не может быть отрицательной")
-        BigDecimal rentalPrice,
+        BigDecimal priceRental,
 
         @DecimalMin(value = "0.0", message = "Залог не может быть отрицательным")
         BigDecimal depositAmount,
 
         @Min(value = 0, message = "Количество не может быть отрицательным")
-        Integer stockCount,
+        Integer physicalInventory,
+
+        Integer digitalLicenses,
+
+        Boolean hasPhysical,
+
+        Boolean hasDigital,
+
+        Boolean isAvailableForRent,
+
+        Boolean isAvailableForPurchase,
 
         @Min(value = 1000, message = "Некорректный год издания")
         @Max(value = 2099, message = "Некорректный год издания")
         Integer publishedYear,
 
-        String coverUrl,
+        String coverImageUrl,
 
         Boolean isActive
 ) {}

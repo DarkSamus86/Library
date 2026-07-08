@@ -47,18 +47,26 @@ public class BookImportConsumer {
                 .title(bookData.title())
                 .isbn(isbn)
                 .publishedYear(bookData.first_publish_year())
-                .coverUrl(bookData.cover_i() != null
+                .coverImageUrl(bookData.cover_i() != null
                         ? "https://covers.openlibrary.org/b/id/" + bookData.cover_i() + "-L.jpg"
                         : null)
                 .description("Imported from Open Library. Authors: "
                         + (bookData.author_name() != null
                         ? String.join(", ", bookData.author_name())
                         : "Unknown"))
-                .price(BigDecimal.ZERO)
-                .rentalPrice(BigDecimal.ZERO)
+                .pricePurchase(BigDecimal.ZERO)
+                .priceRental(BigDecimal.ZERO)
                 .depositAmount(BigDecimal.ZERO)
-                .stockCount(1)
+                .physicalInventory(1)
+                .digitalLicenses(-1)
+                .hasPhysical(true)
+                .hasDigital(true)
+                .isAvailableForRent(true)
+                .isAvailableForPurchase(true)
+                .totalRentalsCount(0)
+                .totalPurchasesCount(0)
                 .isActive(true)
+                .version(0)
                 .build();
 
         bookRepo.save(book);
