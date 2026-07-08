@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         run: |
           git config --global http.sslVerify false
-          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.local/darksamus/Library.git .
+          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git .
           git checkout ${{ github.sha }}
       - name: Build and push Docker image
         env:
