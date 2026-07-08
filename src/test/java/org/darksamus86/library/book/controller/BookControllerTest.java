@@ -38,74 +38,59 @@ class BookControllerTest {
 
     @BeforeEach
     void setUp() {
-        // 1️⃣ Создаём контроллер с мок-сервисом
         BookController controller = new BookController(bookService);
-
-        // 2️⃣ Создаём обработчик исключений (для обработки 404 и других ошибок)
         BookExceptionHandler exceptionHandler = new BookExceptionHandler();
-
-        // 3️⃣ Настраиваем MockMvc БЕЗ явного указания конвертеров
-        // ✅ Spring сам подключит JSON-поддержку через Jackson
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
-                .setControllerAdvice(exceptionHandler)  // Обработка исключений
+                .setControllerAdvice(exceptionHandler)
                 .build();
-
-        // 4️⃣ ObjectMapper для сериализации тестовых данных
         objectMapper = new ObjectMapper();
     }
 
     @Test
     void getBookById_ShouldReturn200() throws Exception {
-        // Given
-        Long id = 1L;
         ResponseGetBook mockResponse = new ResponseGetBook(
                 1L, "Mock Title", "Desc",
-                new BigDecimal("10"), null, null, 10, 2020
+                new BigDecimal("10"), null, null, true, true, 10, -1, true, true, 2020, null, 0, 0
         );
 
-        when(bookService.getBookById(eq(id))).thenReturn(mockResponse);
+        when(bookService.getBookById(eq(1L))).thenReturn(mockResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/books/{id}", id))
+        mockMvc.perform(get("/api/v1/books/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Mock Title"))
-                .andExpect(jsonPath("$.price").value(10.0));
+                .andExpect(jsonPath("$.pricePurchase").value(10.0));
     }
 
     @Test
     void createBook_ShouldReturn201() throws Exception {
-        // Given
         CreateBookRequest request = new CreateBookRequest(
                 "New Book", "Desc", "1234567890123",
-                new BigDecimal("10"), null, null, 5, 2023, null
+                new BigDecimal("10"), null, null, 5, -1, true, true, 2023, null
         );
 
         ResponseGetBook createdResponse = new ResponseGetBook(
                 1L, "New Book", "Desc",
-                new BigDecimal("10"), null, null, 5, 2023
+                new BigDecimal("10"), null, null, true, true, 5, -1, true, true, 2023, null, 0, 0
         );
 
         when(bookService.createBook(any(CreateBookRequest.class)))
                 .thenReturn(createdResponse);
 
-        // When & Then
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("New Book"))
-                .andExpect(jsonPath("$.stockCount").value(5));
+                .andExpect(jsonPath("$.physicalInventory").value(5));
     }
 
     @Test
     void getBookById_ShouldReturn404_WhenNotFound() throws Exception {
-        // Given
         Long id = 999L;
         when(bookService.getBookById(eq(id)))
                 .thenThrow(new BookNotFoundException(id));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/books/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
@@ -113,25 +98,23 @@ class BookControllerTest {
 
     @Test
     void updateBookPrices_ShouldReturn200() throws Exception {
-        // Given
         Long id = 1L;
         BookPricesRequest request = new BookPricesRequest(
                 new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00")
         );
         ResponseGetBook response = new ResponseGetBook(
                 1L, "Book Title", "Desc",
-                new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00"), 5, 2023
+                new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00"), true, true, 5, -1, true, true, 2023, null, 0, 0
         );
 
         when(bookService.updateBookPrices(eq(id), any(BookPricesRequest.class))).thenReturn(response);
 
-        // When & Then
         mockMvc.perform(patch("/api/v1/books/{id}/prices", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.price").value(19.99))
-                .andExpect(jsonPath("$.rentalPrice").value(3.99))
+                .andExpect(jsonPath("$.pricePurchase").value(19.99))
+                .andExpect(jsonPath("$.priceRental").value(3.99))
                 .andExpect(jsonPath("$.depositAmount").value(10.00));
     }
 }

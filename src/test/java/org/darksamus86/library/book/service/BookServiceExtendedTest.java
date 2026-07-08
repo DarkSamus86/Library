@@ -41,7 +41,7 @@ class BookServiceExtendedTest {
     @DisplayName("Should throw when creating book with duplicate ISBN")
     void createBook_WhenDuplicateIsbn_ShouldThrow() {
         var request = new org.darksamus86.library.book.dto.request.CreateBookRequest(
-                "Book", "Desc", "123", BigDecimal.TEN, null, null, 5, 2023, null);
+                "Book", "Desc", "123", BigDecimal.TEN, null, null, 5, -1, true, true, 2023, null);
 
         when(bookRepository.existsByIsbn("123")).thenReturn(true);
 
@@ -54,7 +54,7 @@ class BookServiceExtendedTest {
     @DisplayName("Should update book successfully")
     void updateBook_ShouldUpdateAndReturnResponse() {
         UpdateBookRequest request = new UpdateBookRequest(
-                "New Title", "New Desc", null, null, null, null, null, null, null, null);
+                "New Title", "New Desc", null, null, null, null, null, -1, true, true, null, null, null, null, null);
 
         Book existingBook = new Book();
         existingBook.setId(1L);
@@ -65,7 +65,7 @@ class BookServiceExtendedTest {
         updatedBook.setTitle("New Title");
 
         ResponseGetBook response = new ResponseGetBook(1L, "New Title", "New Desc",
-                BigDecimal.TEN, null, null, 5, 2023);
+                BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
 
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(any(Book.class))).thenReturn(updatedBook);
@@ -81,7 +81,7 @@ class BookServiceExtendedTest {
     @DisplayName("Should throw when updating non-existent book")
     void updateBook_WhenNotFound_ShouldThrow() {
         UpdateBookRequest request = new UpdateBookRequest(
-                "Title", null, null, null, null, null, null, null, null, null);
+                "Title", null, null, null, null, null, null, -1, true, true, null, null, null, null, null);
 
         when(bookRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -93,7 +93,7 @@ class BookServiceExtendedTest {
     @DisplayName("Should throw when updating book with duplicate ISBN")
     void updateBook_WhenDuplicateIsbn_ShouldThrow() {
         UpdateBookRequest request = new UpdateBookRequest(
-                null, null, "duplicateisbn", null, null, null, null, null, null, null);
+                null, null, "duplicateisbn", null, null, null, null, -1, true, true, null, null, null, null, null);
 
         Book existingBook = new Book();
         existingBook.setId(1L);
@@ -158,7 +158,7 @@ class BookServiceExtendedTest {
         book.setTitle("Java Programming");
         book.setIsActive(true);
 
-        ResponseGetBook response = new ResponseGetBook(1L, "Java Programming", null, null, null, null, 0, null);
+        ResponseGetBook response = new ResponseGetBook(1L, "Java Programming", null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0);
 
         when(bookRepository.findByTitleContainingIgnoreCase("java")).thenReturn(List.of(book));
         when(bookMapper.toResponse(book)).thenReturn(response);
@@ -183,7 +183,7 @@ class BookServiceExtendedTest {
         inactiveBook.setIsActive(false);
 
         when(bookRepository.findByTitleContainingIgnoreCase("book")).thenReturn(List.of(activeBook, inactiveBook));
-        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active Book", null, null, null, null, 0, null));
+        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active Book", null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0));
 
         List<ResponseGetBook> result = bookService.searchBooksByTitle("book");
 
@@ -198,7 +198,7 @@ class BookServiceExtendedTest {
         book.setId(1L);
         book.setTitle("Book 1");
 
-        ResponseGetBook response = new ResponseGetBook(1L, "Book 1", null, null, null, null, 0, null);
+        ResponseGetBook response = new ResponseGetBook(1L, "Book 1", null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0);
         PageRequest pageable = PageRequest.of(0, 10);
         Page<Book> page = new PageImpl<>(List.of(book), pageable, 1);
 
@@ -225,7 +225,7 @@ class BookServiceExtendedTest {
         inactiveBook.setIsActive(false);
 
         when(bookRepository.findAll()).thenReturn(List.of(activeBook, inactiveBook));
-        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active", null, null, null, null, 0, null));
+        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active", null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0));
 
         List<ResponseGetBook> result = bookService.getAllBooks();
 

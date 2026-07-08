@@ -36,8 +36,8 @@ class BookPricesRequestValidationTest {
     }
 
     @Test
-    @DisplayName("Should fail when price is null")
-    void nullPrice_ShouldHaveViolation() {
+    @DisplayName("Should fail when pricePurchase is null")
+    void nullPricePurchase_ShouldHaveViolation() {
         BookPricesRequest request = new BookPricesRequest(
                 null, new BigDecimal("2.00"), new BigDecimal("5.00")
         );
@@ -45,12 +45,12 @@ class BookPricesRequestValidationTest {
         Set<ConstraintViolation<BookPricesRequest>> violations = validator.validate(request);
 
         assertThat(violations).isNotEmpty();
-        assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("price"))).isTrue();
+        assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("pricePurchase"))).isTrue();
     }
 
     @Test
-    @DisplayName("Should fail when price is negative")
-    void negativePrice_ShouldHaveViolation() {
+    @DisplayName("Should fail when pricePurchase is negative")
+    void negativePricePurchase_ShouldHaveViolation() {
         BookPricesRequest request = new BookPricesRequest(
                 new BigDecimal("-1.00"), null, null
         );

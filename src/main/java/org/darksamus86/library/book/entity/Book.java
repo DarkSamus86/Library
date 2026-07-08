@@ -34,26 +34,51 @@ public class Book {
     @Column(name = "isbn", unique = true)
     private String isbn;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "price_purchase", nullable = false, precision = 10, scale = 2)
+    private BigDecimal pricePurchase;
 
-    @Column(name = "rental_price", precision = 10, scale = 2)
-    private BigDecimal rentalPrice;
+    @Column(name = "price_rental", precision = 10, scale = 2)
+    private BigDecimal priceRental;
 
     @Column(name = "deposit_amount", precision = 10, scale = 2)
     private BigDecimal depositAmount;
 
-    @Column(name = "stock_count", nullable = false)
-    private Integer stockCount;
+    @Column(name = "has_physical", nullable = false)
+    private Boolean hasPhysical;
+
+    @Column(name = "has_digital", nullable = false)
+    private Boolean hasDigital;
+
+    @Column(name = "physical_inventory", nullable = false)
+    private Integer physicalInventory;
+
+    @Column(name = "digital_licenses", nullable = false)
+    private Integer digitalLicenses;
+
+    @Column(name = "is_available_for_rent", nullable = false)
+    private Boolean isAvailableForRent;
+
+    @Column(name = "is_available_for_purchase", nullable = false)
+    private Boolean isAvailableForPurchase;
+
+    @Column(name = "total_rentals_count", nullable = false)
+    private Integer totalRentalsCount;
+
+    @Column(name = "total_purchases_count", nullable = false)
+    private Integer totalPurchasesCount;
 
     @Column(name = "published_year")
     private Integer publishedYear;
 
-    @Column(name = "cover_url")
-    private String coverUrl;
+    @Column(name = "cover_image_url")
+    private String coverImageUrl;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Integer version;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

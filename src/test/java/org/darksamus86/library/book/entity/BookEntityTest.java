@@ -15,8 +15,8 @@ class BookEntityTest {
     void onCreate_ShouldSetTimestampsAndActiveFlag() {
         Book book = new Book();
         book.setTitle("Test Book");
-        book.setPrice(BigDecimal.TEN);
-        book.setStockCount(5);
+        book.setPricePurchase(BigDecimal.TEN);
+        book.setPhysicalInventory(5);
 
         book.onCreate();
 
@@ -30,8 +30,8 @@ class BookEntityTest {
     void onCreate_ShouldNotOverrideActiveFlag() {
         Book book = new Book();
         book.setTitle("Test Book");
-        book.setPrice(BigDecimal.TEN);
-        book.setStockCount(5);
+        book.setPricePurchase(BigDecimal.TEN);
+        book.setPhysicalInventory(5);
         book.setIsActive(false);
 
         book.onCreate();
@@ -44,8 +44,8 @@ class BookEntityTest {
     void onUpdate_ShouldUpdateTimestamp() {
         Book book = new Book();
         book.setTitle("Test Book");
-        book.setPrice(BigDecimal.TEN);
-        book.setStockCount(5);
+        book.setPricePurchase(BigDecimal.TEN);
+        book.setPhysicalInventory(5);
         LocalDateTime before = LocalDateTime.now().minusHours(1);
         book.setUpdatedAt(before);
 
@@ -59,8 +59,8 @@ class BookEntityTest {
     void addAuthor_ShouldAddBookAuthorLink() {
         Book book = new Book();
         book.setTitle("Test Book");
-        book.setPrice(BigDecimal.TEN);
-        book.setStockCount(5);
+        book.setPricePurchase(BigDecimal.TEN);
+        book.setPhysicalInventory(5);
 
         Author author = Author.builder().fullName("Test Author").build();
 
@@ -81,8 +81,8 @@ class BookEntityTest {
     void removeAuthor_ShouldRemoveBookAuthorLink() {
         Book book = new Book();
         book.setTitle("Test Book");
-        book.setPrice(BigDecimal.TEN);
-        book.setStockCount(5);
+        book.setPricePurchase(BigDecimal.TEN);
+        book.setPhysicalInventory(5);
 
         Author author = Author.builder().fullName("Test Author").build();
 
@@ -102,24 +102,35 @@ class BookEntityTest {
                 .title("Builder Book")
                 .description("Description")
                 .isbn("1234567890")
-                .price(BigDecimal.TEN)
-                .rentalPrice(BigDecimal.ONE)
+                .pricePurchase(BigDecimal.TEN)
+                .priceRental(BigDecimal.ONE)
                 .depositAmount(BigDecimal.valueOf(5))
-                .stockCount(10)
+                .hasPhysical(true)
+                .hasDigital(true)
+                .physicalInventory(10)
+                .digitalLicenses(-1)
+                .isAvailableForRent(true)
+                .isAvailableForPurchase(true)
+                .totalRentalsCount(0)
+                .totalPurchasesCount(0)
                 .publishedYear(2023)
-                .coverUrl("http://cover.url")
+                .coverImageUrl("http://cover.url")
                 .isActive(true)
+                .version(0)
                 .build();
 
         assertThat(book.getTitle()).isEqualTo("Builder Book");
         assertThat(book.getDescription()).isEqualTo("Description");
         assertThat(book.getIsbn()).isEqualTo("1234567890");
-        assertThat(book.getPrice()).isEqualTo(BigDecimal.TEN);
-        assertThat(book.getRentalPrice()).isEqualTo(BigDecimal.ONE);
+        assertThat(book.getPricePurchase()).isEqualTo(BigDecimal.TEN);
+        assertThat(book.getPriceRental()).isEqualTo(BigDecimal.ONE);
         assertThat(book.getDepositAmount()).isEqualTo(BigDecimal.valueOf(5));
-        assertThat(book.getStockCount()).isEqualTo(10);
+        assertThat(book.getHasPhysical()).isTrue();
+        assertThat(book.getHasDigital()).isTrue();
+        assertThat(book.getPhysicalInventory()).isEqualTo(10);
+        assertThat(book.getDigitalLicenses()).isEqualTo(-1);
         assertThat(book.getPublishedYear()).isEqualTo(2023);
-        assertThat(book.getCoverUrl()).isEqualTo("http://cover.url");
+        assertThat(book.getCoverImageUrl()).isEqualTo("http://cover.url");
         assertThat(book.getIsActive()).isTrue();
     }
 

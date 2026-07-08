@@ -136,9 +136,9 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
 
-        book.setPrice(request.price());
-        if (request.rentalPrice() != null) {
-            book.setRentalPrice(request.rentalPrice());
+        book.setPricePurchase(request.pricePurchase());
+        if (request.priceRental() != null) {
+            book.setPriceRental(request.priceRental());
         }
         if (request.depositAmount() != null) {
             book.setDepositAmount(request.depositAmount());

@@ -52,10 +52,10 @@ class BookImportConsumerTest {
         assertThat(savedBook.getTitle()).isEqualTo("Test Book");
         assertThat(savedBook.getIsbn()).isEqualTo("1234567890");
         assertThat(savedBook.getPublishedYear()).isEqualTo(2023);
-        assertThat(savedBook.getPrice()).isEqualTo(BigDecimal.ZERO);
-        assertThat(savedBook.getRentalPrice()).isEqualTo(BigDecimal.ZERO);
+        assertThat(savedBook.getPricePurchase()).isEqualTo(BigDecimal.ZERO);
+        assertThat(savedBook.getPriceRental()).isEqualTo(BigDecimal.ZERO);
         assertThat(savedBook.getDepositAmount()).isEqualTo(BigDecimal.ZERO);
-        assertThat(savedBook.getStockCount()).isEqualTo(1);
+        assertThat(savedBook.getPhysicalInventory()).isEqualTo(1);
         assertThat(savedBook.getIsActive()).isTrue();
     }
 
@@ -140,7 +140,7 @@ class BookImportConsumerTest {
         ArgumentCaptor<Book> captor = ArgumentCaptor.forClass(Book.class);
         verify(bookRepo).save(captor.capture());
 
-        assertThat(captor.getValue().getCoverUrl()).isEqualTo("https://covers.openlibrary.org/b/id/99999-L.jpg");
+        assertThat(captor.getValue().getCoverImageUrl()).isEqualTo("https://covers.openlibrary.org/b/id/99999-L.jpg");
     }
 
     @Test
@@ -156,6 +156,6 @@ class BookImportConsumerTest {
         ArgumentCaptor<Book> captor = ArgumentCaptor.forClass(Book.class);
         verify(bookRepo).save(captor.capture());
 
-        assertThat(captor.getValue().getCoverUrl()).isNull();
+        assertThat(captor.getValue().getCoverImageUrl()).isNull();
     }
 }

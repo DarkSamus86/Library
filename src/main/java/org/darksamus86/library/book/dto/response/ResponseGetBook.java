@@ -6,9 +6,17 @@ public record ResponseGetBook(
         Long id,
         String title,
         String description,
-        BigDecimal price,
-        BigDecimal rentalPrice,
+        BigDecimal pricePurchase,
+        BigDecimal priceRental,
         BigDecimal depositAmount,
-        Integer stockCount,
-        Integer publishedYear
+        Boolean hasPhysical,
+        Boolean hasDigital,
+        Integer physicalInventory,
+        Integer digitalLicenses,
+        Boolean isAvailableForRent,
+        Boolean isAvailableForPurchase,
+        Integer publishedYear,
+        String coverImageUrl,
+        Integer totalRentalsCount,
+        Integer totalPurchasesCount
 ) {}
