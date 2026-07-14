@@ -16,8 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.cfg.MapperBuilder;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,6 +28,7 @@ import java.util.List;
 public class BookService {
     private final BookRepo bookRepository;
     private final BookMapper bookMapper;
+    private final MapperBuilder mapperBuilder;
 
     /**
      * Получить книгу по ID
@@ -52,6 +55,21 @@ public class BookService {
 
         return bookRepository.findAll(pageable)
                 .map(bookMapper::toResponse);
+    }
+
+    /**
+     *
+     *  Получить книгу по isbn
+     */
+
+    public ResponseGetBook findByIsbn(String isbn) {
+        log.debug("Find books by isbn");
+
+
+
+        return bookRepository.findByIsbn(isbn.replace("-", "").replace(" ", "").trim())
+                .map(bookMapper::toResponse)
+                .orElseThrow(() -> new BookNotFoundException("Book with isbn" + isbn + "not found"));
     }
 
     /**
