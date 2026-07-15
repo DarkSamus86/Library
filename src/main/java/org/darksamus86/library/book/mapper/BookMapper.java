@@ -19,6 +19,7 @@ public class BookMapper {
                 book.getId(),
                 book.getTitle(),
                 book.getDescription(),
+                book.getIsbn(),
                 book.getPricePurchase(),
                 book.getPriceRental(),
                 book.getDepositAmount(),
