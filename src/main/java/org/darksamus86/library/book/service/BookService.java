@@ -65,11 +65,9 @@ public class BookService {
     public ResponseGetBook findByIsbn(String isbn) {
         log.debug("Find books by isbn");
 
-
-
         return bookRepository.findByIsbn(isbn.replace("-", "").replace(" ", "").trim())
                 .map(bookMapper::toResponse)
-                .orElseThrow(() -> new BookNotFoundException("Book with isbn" + isbn + "not found"));
+                .orElseThrow(() -> new BookNotFoundException("Book with isbn " + isbn + " not found"));
     }
 
     /**
