@@ -6,6 +6,7 @@ public record ResponseGetBook(
         Long id,
         String title,
         String description,
+        String isbn,
         BigDecimal pricePurchase,
         BigDecimal priceRental,
         BigDecimal depositAmount,
