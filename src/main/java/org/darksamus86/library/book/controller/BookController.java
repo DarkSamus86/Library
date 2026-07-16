@@ -87,6 +87,17 @@ public class BookController {
     }
 
     /**
+     * Поиск книг по жанру
+     */
+    @GetMapping("/genre/{genre}")
+    public ResponseEntity<List<ResponseGetBook>> getBooksByGenre(
+            @PathVariable String genre) {
+        log.info("Get books by genre");
+
+        return ResponseEntity.ok(bookService.findByGenre(genre));
+    }
+
+    /**
      * Обновить книгу (только ADMIN)
      * PUT /api/v1/books/1
      */
