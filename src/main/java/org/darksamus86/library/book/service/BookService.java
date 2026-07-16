@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.cfg.MapperBuilder;
 
 import java.util.List;
 
@@ -30,8 +29,9 @@ public class BookService {
     private final AuthorRepo authorRepo;
     private final GenreRepo genreRepo;
     private final BookGenreRepo bookGenreRepo;
+    private final CategoryRepo categoryRepo;
+    private final BookCategoryRepo bookCategoryRepo;
     private final BookMapper bookMapper;
-    private final MapperBuilder mapperBuilder;
     private final BookAuthorRepo bookAuthorRepo;
 
     /**
@@ -137,6 +137,18 @@ public class BookService {
                     .build();
 
             bookGenreRepo.save(bookGenre);
+        }
+
+        if (request.category() != null && !request.category().isBlank()) {
+            log.info("Creating relation with category and book");
+            Category category = categoryRepo.findByName(request.category());
+
+            BookCategory bookCategory = BookCategory.builder()
+                    .book(savedBook)
+                    .category(category)
+                    .build();
+
+            bookCategoryRepo.save(bookCategory);
         }
 
         log.info("Book created successfully with id: {}", savedBook.getId());

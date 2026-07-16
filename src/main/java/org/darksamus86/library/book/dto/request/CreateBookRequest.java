@@ -18,7 +18,10 @@ public record CreateBookRequest(
         @Size(max = 255, message = "Имя автора не должно превышать 255 символов")
         String author,
 
+        @NotNull(message = "Жанр обязательный")
         String genre,
+
+        String category,
 
         @NotNull(message = "Цена покупки обязательна")
         @DecimalMin(value = "0.0", message = "Цена не может быть отрицательной")
