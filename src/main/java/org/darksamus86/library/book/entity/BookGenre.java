@@ -4,23 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "book_genres")
+@Table(name = "book_genres", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_book_genres_book_genre", columnNames = {"book_id", "genre_id"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class BookGenre {
-    @EmbeddedId
-    private BookGenreId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId("bookId")
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId("genreId")
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 }
