@@ -2,7 +2,7 @@ package org.darksamus86.library.book.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.darksamus86.library.book.common.exceptions.BookAlreadyExistException;
+import org.darksamus86.library.book.common.exceptions.IsbnAlreadyExist;
 import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
@@ -87,6 +87,22 @@ public class BookService {
     }
 
     /**
+     * Получение книги по жанру
+     */
+    public List<ResponseGetBook> findByGenre(String genre) {
+        log.debug("Getting book by genre");
+
+        Long genreId = genreRepo.findByName(genre).getId();
+        List<Long> booksId = bookGenreRepo.findBookIdsByGenreId(genreId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toResponse)
+                .toList();
+    }
+
+
+    /**
      * Создать новую книгу
      */
     @Transactional
@@ -101,7 +117,7 @@ public class BookService {
 
         // Проверка на дубликат ISBN
         if (isbn != null && bookRepository.existsByIsbn(isbn)) {
-            throw new BookAlreadyExistException(isbn);
+            throw new IsbnAlreadyExist(isbn);
         }
 
         Book book = bookMapper.toEntity(request);
