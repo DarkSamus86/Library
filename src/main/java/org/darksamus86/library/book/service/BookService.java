@@ -2,14 +2,15 @@ package org.darksamus86.library.book.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.book.common.exceptions.BookAlreadyExistException;
 import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
-import org.darksamus86.library.book.entity.Book;
+import org.darksamus86.library.book.entity.*;
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
 import org.darksamus86.library.book.mapper.BookMapper;
-import org.darksamus86.library.book.repository.BookRepo;
+import org.darksamus86.library.book.repository.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.cfg.MapperBuilder;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,8 +27,12 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class BookService {
     private final BookRepo bookRepository;
+    private final AuthorRepo authorRepo;
+    private final GenreRepo genreRepo;
+    private final BookGenreRepo bookGenreRepo;
     private final BookMapper bookMapper;
     private final MapperBuilder mapperBuilder;
+    private final BookAuthorRepo bookAuthorRepo;
 
     /**
      * Получить книгу по ID
@@ -97,12 +101,43 @@ public class BookService {
 
         // Проверка на дубликат ISBN
         if (isbn != null && bookRepository.existsByIsbn(isbn)) {
-            throw new IllegalArgumentException("Книга с таким ISBN уже существует");
+            throw new BookAlreadyExistException(isbn);
         }
 
         Book book = bookMapper.toEntity(request);
         book.setIsbn(isbn); // Сохраняем очищенный ISBN
         Book savedBook = bookRepository.save(book);
+
+        if (request.author() != null && !request.author().isBlank()) {
+            log.info("Creating relation with book and author");
+            Author author = authorRepo.findByFullName(request.author());
+            if (author == null) {
+                author = Author.builder()
+                        .fullName(request.author())
+                        .build();
+                author = authorRepo.save(author);
+            }
+
+            BookAuthor bookAuthor = BookAuthor.builder()
+                    .book(savedBook)
+                    .author(author)
+                    .authorRole(AuthorRole.MAIN_AUTHOR)
+                    .build();
+
+            bookAuthorRepo.save(bookAuthor);
+        }
+
+        if (request.genre() != null && !request.genre().isBlank()) {
+            log.info("Creating relation with book and genre");
+            Genre genre = genreRepo.findByName(request.genre());
+
+            BookGenre bookGenre = BookGenre.builder()
+                    .book(savedBook)
+                    .genre(genre)
+                    .build();
+
+            bookGenreRepo.save(bookGenre);
+        }
 
         log.info("Book created successfully with id: {}", savedBook.getId());
         return bookMapper.toResponse(savedBook);
