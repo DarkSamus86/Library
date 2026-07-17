@@ -7,6 +7,7 @@ import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
+import org.darksamus86.library.book.dto.response.ResponseGetPartBook;
 import org.darksamus86.library.book.entity.*;
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
 import org.darksamus86.library.book.mapper.BookMapper;
@@ -87,9 +88,9 @@ public class BookService {
     }
 
     /**
-     * Получение книги по жанру
+     * Получение книг по жанру
      */
-    public List<ResponseGetBook> findByGenre(String genre) {
+    public List<ResponseGetPartBook> findByGenre(String genre) {
         log.debug("Getting book by genre");
 
         Long genreId = genreRepo.findByName(genre).getId();
@@ -97,10 +98,24 @@ public class BookService {
 
         return bookRepository.findAllById(booksId).stream()
                 .filter(Book::getIsActive)
-                .map(bookMapper::toResponse)
+                .map(bookMapper::toPartResponse)
                 .toList();
     }
 
+    /**
+     *  Получение книг по автору
+     */
+    public List<ResponseGetPartBook> findByAuthor(String author) {
+        log.debug("Getting books by author");
+
+        Long authorId = authorRepo.findByFullName(author).getId();
+        List<Long> booksId = bookAuthorRepo.findBookIdsByAuthorId(authorId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toPartResponse)
+                .toList();
+    }
 
     /**
      * Создать новую книгу

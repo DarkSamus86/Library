@@ -7,6 +7,7 @@ import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
+import org.darksamus86.library.book.dto.response.ResponseGetPartBook;
 import org.darksamus86.library.book.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,11 +91,23 @@ public class BookController {
      * Поиск книг по жанру
      */
     @GetMapping("/genre/{genre}")
-    public ResponseEntity<List<ResponseGetBook>> getBooksByGenre(
+    public ResponseEntity<List<ResponseGetPartBook>> getBooksByGenre(
             @PathVariable String genre) {
         log.info("Get books by genre");
 
         return ResponseEntity.ok(bookService.findByGenre(genre));
+    }
+
+
+    /**
+     * Получение книг по автору
+     */
+    @GetMapping("/author/{author}")
+    public ResponseEntity<List<ResponseGetPartBook>> getBookByAuthor(
+            @PathVariable String author) {
+        log.info("Get books by author");
+
+        return ResponseEntity.ok(bookService.findByAuthor(author));
     }
 
     /**
