@@ -111,6 +111,18 @@ public class BookController {
     }
 
     /**
+     * Получение книг по категориям
+     */
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<ResponseGetPartBook>> getBooksByCategory(
+            @PathVariable String category
+    ) {
+        log.info("Get books by category");
+
+        return ResponseEntity.ok(bookService.findByCategory(category));
+    }
+
+    /**
      * Обновить книгу (только ADMIN)
      * PUT /api/v1/books/1
      */
