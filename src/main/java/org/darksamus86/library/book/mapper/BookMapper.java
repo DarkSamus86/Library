@@ -3,6 +3,7 @@ package org.darksamus86.library.book.mapper;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
+import org.darksamus86.library.book.dto.response.ResponseGetPartBook;
 import org.darksamus86.library.book.entity.Book;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class BookMapper {
                 book.getId(),
                 book.getTitle(),
                 book.getDescription(),
+                book.getIsbn(),
                 book.getPricePurchase(),
                 book.getPriceRental(),
                 book.getDepositAmount(),
@@ -32,6 +34,17 @@ public class BookMapper {
                 book.getCoverImageUrl(),
                 book.getTotalRentalsCount(),
                 book.getTotalPurchasesCount()
+        );
+    }
+
+    // entity -> part dto
+    public ResponseGetPartBook toPartResponse(Book book) {
+        return new ResponseGetPartBook(
+                book.getTitle(),
+                book.getDescription(),
+                book.getPricePurchase(),
+                book.getPublishedYear(),
+                book.getCoverImageUrl()
         );
     }
 

@@ -15,7 +15,9 @@ users ──< user_roles >── roles
 
 books ──< book_authors >── authors
   │
-  └──< book_categories >── categories
+  ├──< book_categories >── categories
+  │
+  └──< book_genres >── genres
 ```
 
 ---
@@ -157,7 +159,31 @@ books ──< book_authors >── authors
 
 ---
 
-## 11. `payment_methods` — способы оплаты пользователя
+## 11. `genres` — жанры книг
+
+| Поле | Тип | Назначение |
+|---|---|---|
+| id | bigserial PK | Идентификатор |
+| name | varchar(100) UNIQUE | Название жанра (Fantasy, Detective, Sci-Fi) |
+| description | text | Описание жанра |
+| created_at | timestamp | Аудит |
+
+**Зачем:** Жанры отличаются от категорий. Категории — это рубрикация (Programming, Java, Spring), а жанры — литературные жанры (Fantasy, Detective, Romance, Sci-Fi). Вынесены отдельно для удобной фильтрации книг по жанрам на фронтенде.
+
+---
+
+## 12. `book_genres` — связь книг с жанрами (Many-to-Many)
+
+| Поле | Тип |
+|---|---|
+| book_id | bigint PK/FK → books(id) |
+| genre_id | bigint PK/FK → genres(id) |
+
+**Зачем:** Composite primary key без суррогатного id. Книга может иметь несколько жанров. Отдельная таблица позволяет быстро фильтровать книги по жанру через JOIN, не загружая лишние данные из `books`.
+
+---
+
+## 13. `payment_methods` — способы оплаты пользователя
 
 | Поле | Тип | Назначение |
 |---|---|---|
@@ -174,7 +200,7 @@ books ──< book_authors >── authors
 
 ---
 
-## 12. `transactions` — финансовые транзакции
+## 14. `transactions` — финансовые транзакции
 
 | Поле | Тип | Назначение |
 |---|---|---|
@@ -190,7 +216,7 @@ books ──< book_authors >── authors
 
 ---
 
-## 13. `user_sessions` — сессии (зарезервировано)
+## 15. `user_sessions` — сессии (зарезервировано)
 
 | Поле | Тип |
 |---|---|
@@ -215,4 +241,5 @@ books ──< book_authors >── authors
 | ManyToMany (User ↔ Role через UserRole) | Связь с атрибутами |
 | ManyToMany (Book ↔ Author через BookAuthor) | Связь с атрибутами (роль, порядок) |
 | ManyToMany (Book ↔ Category через BookCategory) | Простая связь, composite PK |
+| ManyToMany (Book ↔ Genre через BookGenres) | Простая связь, composite PK |
 | ManyToOne (Transaction → PaymentMethod) | Транзакция совершена через конкретный способ оплаты |

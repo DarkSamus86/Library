@@ -7,6 +7,7 @@ import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
+import org.darksamus86.library.book.dto.response.ResponseGetPartBook;
 import org.darksamus86.library.book.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,13 +29,26 @@ public class BookController {
 
     /**
      * Получить все книги
-     * GET /api/v1/books?page=0&size=10&sort=title,asc
+     * GET ?page=0&size=10&sort=title,asc
      */
     @GetMapping
     public ResponseEntity<Page<ResponseGetBook>> getAllBooks(
             @PageableDefault(size = 10) Pageable pageable) {
         log.info("Getting all books with pagination");
         return ResponseEntity.ok(bookService.getAllBooks(pageable));
+    }
+
+    /**
+     * Получить книгу по isbn
+     * GET /api/v1/books/isbn/{isbn}
+     */
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity<ResponseGetBook> getBookByIsbn(
+            @PathVariable String isbn
+    ) {
+       log.info("Book with isbn: {}", isbn);
+
+        return ResponseEntity.ok(bookService.findByIsbn(isbn));
     }
 
     /**
@@ -71,6 +85,41 @@ public class BookController {
         return ResponseEntity
                 .created(URI.create("/api/v1/books/" + createdBook.id()))
                 .body(createdBook);
+    }
+
+    /**
+     * Поиск книг по жанру
+     */
+    @GetMapping("/genre/{genre}")
+    public ResponseEntity<List<ResponseGetPartBook>> getBooksByGenre(
+            @PathVariable String genre) {
+        log.info("Get books by genre");
+
+        return ResponseEntity.ok(bookService.findByGenre(genre));
+    }
+
+
+    /**
+     * Получение книг по автору
+     */
+    @GetMapping("/author/{author}")
+    public ResponseEntity<List<ResponseGetPartBook>> getBookByAuthor(
+            @PathVariable String author) {
+        log.info("Get books by author");
+
+        return ResponseEntity.ok(bookService.findByAuthor(author));
+    }
+
+    /**
+     * Получение книг по категориям
+     */
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<ResponseGetPartBook>> getBooksByCategory(
+            @PathVariable String category
+    ) {
+        log.info("Get books by category");
+
+        return ResponseEntity.ok(bookService.findByCategory(category));
     }
 
     /**

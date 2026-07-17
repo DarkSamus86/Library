@@ -2,14 +2,16 @@ package org.darksamus86.library.book.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.book.common.exceptions.IsbnAlreadyExist;
 import org.darksamus86.library.book.dto.request.BookPricesRequest;
 import org.darksamus86.library.book.dto.request.CreateBookRequest;
 import org.darksamus86.library.book.dto.request.UpdateBookRequest;
 import org.darksamus86.library.book.dto.response.ResponseGetBook;
-import org.darksamus86.library.book.entity.Book;
+import org.darksamus86.library.book.dto.response.ResponseGetPartBook;
+import org.darksamus86.library.book.entity.*;
 import org.darksamus86.library.book.common.exceptions.BookNotFoundException;
 import org.darksamus86.library.book.mapper.BookMapper;
-import org.darksamus86.library.book.repository.BookRepo;
+import org.darksamus86.library.book.repository.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,7 +27,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class BookService {
     private final BookRepo bookRepository;
+    private final AuthorRepo authorRepo;
+    private final GenreRepo genreRepo;
+    private final BookGenreRepo bookGenreRepo;
+    private final CategoryRepo categoryRepo;
+    private final BookCategoryRepo bookCategoryRepo;
     private final BookMapper bookMapper;
+    private final BookAuthorRepo bookAuthorRepo;
 
     /**
      * Получить книгу по ID
@@ -55,6 +63,19 @@ public class BookService {
     }
 
     /**
+     *
+     *  Получить книгу по isbn
+     */
+
+    public ResponseGetBook findByIsbn(String isbn) {
+        log.debug("Find books by isbn");
+
+        return bookRepository.findByIsbn(isbn.replace("-", "").replace(" ", "").trim())
+                .map(bookMapper::toResponse)
+                .orElseThrow(() -> new BookNotFoundException("Book with isbn " + isbn + " not found"));
+    }
+
+    /**
      * Получить все книги (без пагинации)
      */
     public List<ResponseGetBook> getAllBooks() {
@@ -63,6 +84,51 @@ public class BookService {
         return bookRepository.findAll().stream()
                 .filter(Book::getIsActive) // Только активные
                 .map(bookMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Получение книг по жанру
+     */
+    public List<ResponseGetPartBook> findByGenre(String genre) {
+        log.debug("Getting book by genre");
+
+        Long genreId = genreRepo.findByName(genre).getId();
+        List<Long> booksId = bookGenreRepo.findBookIdsByGenreId(genreId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toPartResponse)
+                .toList();
+    }
+
+    /**
+     *  Получение книг по автору
+     */
+    public List<ResponseGetPartBook> findByAuthor(String author) {
+        log.debug("Getting books by author");
+
+        Long authorId = authorRepo.findByFullName(author).getId();
+        List<Long> booksId = bookAuthorRepo.findBookIdsByAuthorId(authorId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toPartResponse)
+                .toList();
+    }
+
+    /**
+     * Получение книг по категориям
+     */
+    public List<ResponseGetPartBook> findByCategory(String category) {
+        log.debug("Getting books by category");
+
+        Long categoryId = categoryRepo.findByName(category).getId();
+        List<Long> booksId = bookCategoryRepo.findBookIdsByCategoryId(categoryId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toPartResponse)
                 .toList();
     }
 
@@ -81,12 +147,55 @@ public class BookService {
 
         // Проверка на дубликат ISBN
         if (isbn != null && bookRepository.existsByIsbn(isbn)) {
-            throw new IllegalArgumentException("Книга с таким ISBN уже существует");
+            throw new IsbnAlreadyExist(isbn);
         }
 
         Book book = bookMapper.toEntity(request);
         book.setIsbn(isbn); // Сохраняем очищенный ISBN
         Book savedBook = bookRepository.save(book);
+
+        if (request.author() != null && !request.author().isBlank()) {
+            log.info("Creating relation with book and author");
+            Author author = authorRepo.findByFullName(request.author());
+            if (author == null) {
+                author = Author.builder()
+                        .fullName(request.author())
+                        .build();
+                author = authorRepo.save(author);
+            }
+
+            BookAuthor bookAuthor = BookAuthor.builder()
+                    .book(savedBook)
+                    .author(author)
+                    .authorRole(AuthorRole.MAIN_AUTHOR)
+                    .build();
+
+            bookAuthorRepo.save(bookAuthor);
+        }
+
+        if (request.genre() != null && !request.genre().isBlank()) {
+            log.info("Creating relation with book and genre");
+            Genre genre = genreRepo.findByName(request.genre());
+
+            BookGenre bookGenre = BookGenre.builder()
+                    .book(savedBook)
+                    .genre(genre)
+                    .build();
+
+            bookGenreRepo.save(bookGenre);
+        }
+
+        if (request.category() != null && !request.category().isBlank()) {
+            log.info("Creating relation with category and book");
+            Category category = categoryRepo.findByName(request.category());
+
+            BookCategory bookCategory = BookCategory.builder()
+                    .book(savedBook)
+                    .category(category)
+                    .build();
+
+            bookCategoryRepo.save(bookCategory);
+        }
 
         log.info("Book created successfully with id: {}", savedBook.getId());
         return bookMapper.toResponse(savedBook);
