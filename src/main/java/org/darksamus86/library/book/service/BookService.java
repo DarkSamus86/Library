@@ -118,6 +118,21 @@ public class BookService {
     }
 
     /**
+     * Получение книг по категориям
+     */
+    public List<ResponseGetPartBook> findByCategory(String category) {
+        log.debug("Getting books by category");
+
+        Long categoryId = categoryRepo.findByName(category).getId();
+        List<Long> booksId = bookCategoryRepo.findBookIdsByCategoryId(categoryId);
+
+        return bookRepository.findAllById(booksId).stream()
+                .filter(Book::getIsActive)
+                .map(bookMapper::toPartResponse)
+                .toList();
+    }
+
+    /**
      * Создать новую книгу
      */
     @Transactional
