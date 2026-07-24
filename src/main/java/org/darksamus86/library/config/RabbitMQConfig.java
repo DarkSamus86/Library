@@ -11,30 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @EnableRabbit
 public class RabbitMQConfig {
 
-    // NOTIFICATION
-
-    public static final String NOTIFICATION_EXCHANGE = "library.notification";
-    public static final String QUEUE_EMAIL = "library.notification.email";
-    public static final String ROUTING_KEY_USER_REGISTERED = "user.registered";
-
-    @Bean
-    public DirectExchange notificationExchange() {
-        return new DirectExchange(NOTIFICATION_EXCHANGE);
-    }
-
-    @Bean
-    public Queue emailQueue() {
-        return new Queue(QUEUE_EMAIL, true);
-    }
-
-    @Bean
-    public Binding emailBinding(DirectExchange notificationExchange, Queue emailQueue) {
-        return BindingBuilder
-                .bind(emailQueue)
-                .to(notificationExchange)
-                .with(ROUTING_KEY_USER_REGISTERED);
-    }
-
     // BOOK IMPORT
 
     public static final String BOOK_EXCHANGE = "library.book";
