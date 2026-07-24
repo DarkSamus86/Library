@@ -2,8 +2,6 @@ package org.darksamus86.library.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.darksamus86.library.notification.event.UserRegisteredEvent;
-import org.darksamus86.library.notification.publisher.UserEventPublisher;
 import org.darksamus86.library.user.common.exceptions.*;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
 import org.darksamus86.library.user.dto.request.UserUpdateDto;
@@ -28,7 +26,6 @@ public class UserService {
     private final RoleRepo roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final UserEventPublisher eventPublisher;
 
     // ✅ РЕГИСТРАЦИЯ
     public UserResponseDto register(UserRegistrationDto dto) {
@@ -46,12 +43,6 @@ public class UserService {
 
         User saved = userRepository.save(user);
         log.info("User registered successfully: id={}", saved.getId());
-
-        eventPublisher.publishUserRegistered(new UserRegisteredEvent(
-                saved.getId(),
-                saved.getEmail(),
-                saved.getUsername()
-        ));
 
         return userMapper.toResponse(saved);
     }

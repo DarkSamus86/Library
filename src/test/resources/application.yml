@@ -25,10 +25,6 @@ spring:
     username: guest
     password: guest
 
-  mail:
-    host: localhost
-    port: 1025
-
   cache:
     type: simple
 

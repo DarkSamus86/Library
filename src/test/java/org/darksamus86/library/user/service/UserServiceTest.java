@@ -1,7 +1,5 @@
 package org.darksamus86.library.user.service;
 
-import org.darksamus86.library.notification.event.UserRegisteredEvent;
-import org.darksamus86.library.notification.publisher.UserEventPublisher;
 import org.darksamus86.library.user.common.exceptions.*;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
 import org.darksamus86.library.user.dto.request.UserUpdateDto;
@@ -46,9 +44,6 @@ class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
-    @Mock
-    private UserEventPublisher eventPublisher;
-
     @InjectMocks
     private UserService userService;
 
@@ -70,7 +65,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should register user successfully")
-    void register_ShouldCreateUserAndPublishEvent() {
+    void register_ShouldCreateUser() {
         UserRegistrationDto dto = new UserRegistrationDto("test@test.com", "testuser", "password123", "Test", "User");
         User user = createUser(1L, "testuser", "test@test.com");
         Role role = new Role();
@@ -94,7 +89,6 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
         verify(userRepository).save(any(User.class));
-        verify(eventPublisher).publishUserRegistered(any(UserRegisteredEvent.class));
     }
 
     @Test

@@ -45,9 +45,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-    // === MESSAGING & MAIL ===
+    // === MESSAGING ===
     implementation("org.springframework.boot:spring-boot-starter-amqp")
-    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // === LOGGING ===
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
