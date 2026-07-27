@@ -2,35 +2,57 @@ name: Test deploy to Kubernetes
 
 on:
   push:
-    branches: [dev]
+    branches:
+      - dev
   workflow_dispatch:
 
 jobs:
-  test-build-deploy:
+  tests:
+    name: Run Java tests
+    runs-on: java21
+
+    steps:
+      - name: Checkout code
+        run: |
+          git clone \
+            https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git \
+            .
+          git checkout ${{ github.sha }}
+
+      - name: Verify Java
+        run: |
+          java -version
+
+      - name: Run tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean test \
+            --no-daemon \
+            --stacktrace
+
+  build-and-deploy:
+    name: Build and deploy
+    needs:
+      - tests
+
     runs-on: host
 
     steps:
       - name: Checkout code
         run: |
-          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git .
+          git clone \
+            https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git \
+            .
           git checkout ${{ github.sha }}
-
-      - name: Run tests
-        run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -e GRADLE_USER_HOME=/workspace/.gradle-ci \
-            -v "$PWD:/workspace" \
-            -w /workspace \
-            eclipse-temurin:21-jdk \
-            ./gradlew clean test --no-daemon --stacktrace
 
       - name: Build and push Docker image
         env:
           SHA: ${{ github.sha }}
         run: |
-          TAG=${SHA:0:7}
-          IMAGE=registry.robotov.site/test-library:$TAG
+          set -eu
+
+          TAG=$(printf '%s' "$SHA" | cut -c1-7)
+          IMAGE="registry.robotov.site/test-library:$TAG"
 
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
@@ -39,8 +61,10 @@ jobs:
         env:
           SHA: ${{ github.sha }}
         run: |
-          TAG=${SHA:0:7}
-          IMAGE=registry.robotov.site/test-library:$TAG
+          set -eu
+
+          TAG=$(printf '%s' "$SHA" | cut -c1-7)
+          IMAGE="registry.robotov.site/test-library:$TAG"
 
           kubectl apply \
             -f k8s/test-ns/t-deployment-library.yaml \
@@ -54,15 +78,22 @@ jobs:
           kubectl rollout status \
             deployment/test-library \
             -n library-test \
-            --timeout=180s
+            --timeout=240s
 
       - name: Kubernetes diagnostics
         if: failure()
         run: |
-          kubectl get deployment,pods,service -n library-test -o wide || true
-          kubectl get events -n library-test --sort-by=.lastTimestamp || true
-          kubectl describe deployment/test-library -n library-test || true
-          kubectl describe pods -n library-test -l app=test-library || true
+          kubectl get deployment,pods,service \
+            -n library-test \
+            -o wide || true
+
+          kubectl describe deployment/test-library \
+            -n library-test || true
+
+          kubectl describe pods \
+            -n library-test \
+            -l app=test-library || true
+
           kubectl logs \
             -n library-test \
             -l app=test-library \
