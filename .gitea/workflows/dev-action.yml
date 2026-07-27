@@ -2,28 +2,97 @@ name: Dev deploy to Kubernetes
 
 on:
   workflow_dispatch:
-  
+
 jobs:
-  build-and-deploy:
-    runs-on: host
+  tests:
+    name: Run Java tests
+    runs-on: java21
+
     steps:
       - name: Checkout code
         run: |
-          git config --global http.sslVerify false
-          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git .
+          git clone \
+            https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git \
+            .
           git checkout ${{ github.sha }}
+
+      - name: Verify Java
+        run: |
+          java -version
+
+      - name: Run tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean test \
+            --no-daemon \
+            --stacktrace
+
+  build-and-deploy:
+    name: Build and deploy
+    needs:
+      - tests
+
+    runs-on: host
+
+    steps:
+      - name: Checkout code
+        run: |
+          git clone \
+            https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git \
+            .
+          git checkout ${{ github.sha }}
+
       - name: Build and push Docker image
         env:
           SHA: ${{ github.sha }}
         run: |
-          TAG=${SHA:0:7}
-          docker build -t registry.robotov.site/dev-library:$TAG .
-          docker push registry.robotov.site/dev-library:$TAG
-      - name: Deploy to Kubernetes
+          set -eu
+
+          TAG=$(printf '%s' "$SHA" | cut -c1-7)
+          IMAGE="registry.robotov.site/dev-library:$TAG"
+
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to dev namespace
         env:
           SHA: ${{ github.sha }}
         run: |
-          TAG=${SHA:0:7}
-          sed -i "s|image:.*dev-library:.*|image: registry.robotov.site/dev-library:$TAG|" k8s/deployment.yaml
-          kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -n dev
-          kubectl rollout status deployment/dev-library -n dev --timeout=180s
+          set -eu
+
+          TAG=$(printf '%s' "$SHA" | cut -c1-7)
+          IMAGE="registry.robotov.site/dev-library:$TAG"
+
+          kubectl apply \
+            -f k8s/dev-ns/deployment.yaml \
+            -f k8s/dev-ns/service.yaml
+
+          kubectl set image \
+            deployment/dev-library \
+            dev-library="$IMAGE" \
+            -n library-test
+
+          kubectl rollout status \
+            deployment/dev-library \
+            -n library-test \
+            --timeout=240s
+
+      - name: Kubernetes diagnostics
+        if: failure()
+        run: |
+          kubectl get deployment,pods,service \
+            -n library-test \
+            -o wide || true
+
+          kubectl describe deployment/dev-library \
+            -n library-test || true
+
+          kubectl describe pods \
+            -n library-test \
+            -l app=dev-library || true
+
+          kubectl logs \
+            -n library-test \
+            -l app=dev-library \
+            --all-containers=true \
+            --tail=300 || true
