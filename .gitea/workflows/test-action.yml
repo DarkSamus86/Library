@@ -1,0 +1,65 @@
+name: Test deploy to Kubernetes
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  test-build-deploy:
+    runs-on: host
+
+    steps:
+      - name: Checkout code
+        run: |
+          git clone https://ro8otov:${{ secrets.runner_token }}@gitea.robotov.site/darksamus/Library.git .
+          git checkout ${{ github.sha }}
+
+      - name: Run tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean test --no-daemon --stacktrace
+
+      - name: Build and push Docker image
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          TAG=${SHA:0:7}
+          IMAGE=registry.robotov.site/test-library:$TAG
+
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to library-test
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          TAG=${SHA:0:7}
+          IMAGE=registry.robotov.site/test-library:$TAG
+
+          kubectl apply \
+            -f k8s/test-ns/t-deployment-library.yaml \
+            -f k8s/test-ns/t-service-library.yaml
+
+          kubectl set image \
+            deployment/test-library \
+            test-library="$IMAGE" \
+            -n library-test
+
+          kubectl rollout status \
+            deployment/test-library \
+            -n library-test \
+            --timeout=180s
+
+      - name: Kubernetes diagnostics
+        if: failure()
+        run: |
+          kubectl get deployment,pods,service -n library-test -o wide || true
+          kubectl get events -n library-test --sort-by=.lastTimestamp || true
+          kubectl describe deployment/test-library -n library-test || true
+          kubectl describe pods -n library-test -l app=test-library || true
+          kubectl logs \
+            -n library-test \
+            -l app=test-library \
+            --all-containers=true \
+            --tail=300 || true

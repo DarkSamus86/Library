@@ -6,8 +6,8 @@ build/
 !**/src/test/**/build/
 .env
 k8s/*
-!k8s/deployment.yaml
-!k8s/service.yaml
+!k8s/dev-ns/deployment.yaml
+!k8s/dev-ns/service.yaml
 
 ### STS ###
 .apt_generated
