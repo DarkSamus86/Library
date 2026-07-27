@@ -17,8 +17,13 @@ jobs:
 
       - name: Run tests
         run: |
-          chmod +x ./gradlew
-          ./gradlew clean test --no-daemon --stacktrace
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e GRADLE_USER_HOME=/workspace/.gradle-ci \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            eclipse-temurin:21-jdk \
+            ./gradlew clean test --no-daemon --stacktrace
 
       - name: Build and push Docker image
         env:
