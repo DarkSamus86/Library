@@ -5,9 +5,12 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .env
-k8s/*
+k8s/dev-ns/*
+k8s/test-ns/*
 !k8s/dev-ns/deployment.yaml
 !k8s/dev-ns/service.yaml
+!k8s/test-ns/t-deployment-library.yaml
+!k8s/test-ns/t-service-library.yaml
 
 ### STS ###
 .apt_generated
