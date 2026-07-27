@@ -65,34 +65,35 @@ jobs:
 
           kubectl apply \
             -f k8s/dev-ns/deployment.yaml \
-            -f k8s/dev-ns/service.yaml
+            -f k8s/dev-ns/service.yaml \
+            -n dev
 
           kubectl set image \
             deployment/dev-library \
             dev-library="$IMAGE" \
-            -n library-test
+            -n dev
 
           kubectl rollout status \
             deployment/dev-library \
-            -n library-test \
+            -n dev \
             --timeout=240s
 
       - name: Kubernetes diagnostics
         if: failure()
         run: |
           kubectl get deployment,pods,service \
-            -n library-test \
+            -n dev \
             -o wide || true
 
           kubectl describe deployment/dev-library \
-            -n library-test || true
+            -n dev || true
 
           kubectl describe pods \
-            -n library-test \
+            -n dev \
             -l app=dev-library || true
 
           kubectl logs \
-            -n library-test \
+            -n dev \
             -l app=dev-library \
             --all-containers=true \
             --tail=300 || true
