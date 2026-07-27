@@ -42,7 +42,7 @@ public class BookServiceTest {
         bookEntity.setId(bookId);
         bookEntity.setTitle("Test Book");
 
-        ResponseGetBook expectedDto = new ResponseGetBook(1L, "Test Book", null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, true, true, 0, -1, true, true, 0, null, 0, 0);
+        ResponseGetBook expectedDto = new ResponseGetBook(1L, "Test Book", null, null, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, true, true, 0, -1, true, true, 0, null, 0, 0);
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(bookEntity));
         when(bookMapper.toResponse(bookEntity)).thenReturn(expectedDto);
@@ -72,6 +72,7 @@ public class BookServiceTest {
     @DisplayName("Должен создать книгу")
     void createBook_ValidRequest_ShouldReturnSavedBook() {
         CreateBookRequest request = new CreateBookRequest("New Book", "Desc", "123",
+                "", "", null,
                 new BigDecimal("10"), null, null, 5, -1, true, true, 2023, "url");
 
         Book newBook = new Book();
@@ -79,6 +80,7 @@ public class BookServiceTest {
         newBook.setTitle("New Book");
 
         ResponseGetBook responseDto = new ResponseGetBook(1L, "New Book", "Desc",
+                "123",
                 new BigDecimal("10"), null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
 
         when(bookRepository.existsByIsbn("123")).thenReturn(false);
@@ -96,6 +98,7 @@ public class BookServiceTest {
     @DisplayName("Должен очистить ISBN от дефисов и пробелов при создании книги")
     void createBook_WithHyphenatedIsbn_ShouldSanitizeIsbn() {
         CreateBookRequest request = new CreateBookRequest("New Book", "Desc", " 978-0-13-468599-1 ",
+                "", "", null,
                 new BigDecimal("10"), null, null, 5, -1, true, true, 2023, "url");
 
         Book bookEntity = new Book();
@@ -104,6 +107,7 @@ public class BookServiceTest {
         bookEntity.setIsbn("9780134685991");
 
         ResponseGetBook responseDto = new ResponseGetBook(1L, "New Book", "Desc",
+                "9780134685991",
                 new BigDecimal("10"), null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
 
         when(bookRepository.existsByIsbn("9780134685991")).thenReturn(false);
@@ -132,6 +136,7 @@ public class BookServiceTest {
         existingBook.setPricePurchase(BigDecimal.ZERO);
 
         ResponseGetBook responseDto = new ResponseGetBook(bookId, "Existing Book", "Desc",
+                null,
                 new BigDecimal("299.99"), new BigDecimal("49.99"), new BigDecimal("100.00"), true, true, 5, -1, true, true, 2023, null, 0, 0);
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
