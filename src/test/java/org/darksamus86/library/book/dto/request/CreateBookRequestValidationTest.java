@@ -28,6 +28,7 @@ class CreateBookRequestValidationTest {
     void validRequest_ShouldHaveNoViolations() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
+                "Test Author", "Fiction", "Programming",
                 new BigDecimal("10.00"), new BigDecimal("2.00"), new BigDecimal("5.00"),
                 5, -1, true, true, 2023, "http://cover.url"
         );
@@ -42,6 +43,7 @@ class CreateBookRequestValidationTest {
     void blankTitle_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "", "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 
@@ -56,6 +58,7 @@ class CreateBookRequestValidationTest {
     void nullPricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 null, null, null, 5, -1, true, true, 2023, null
         );
 
@@ -70,6 +73,7 @@ class CreateBookRequestValidationTest {
     void negativePricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 new BigDecimal("-1.00"), null, null, 5, -1, true, true, 2023, null
         );
 
@@ -83,6 +87,7 @@ class CreateBookRequestValidationTest {
     void nullPhysicalInventory_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 new BigDecimal("10.00"), null, null, null, -1, true, true, 2023, null
         );
 
@@ -96,6 +101,7 @@ class CreateBookRequestValidationTest {
     void negativePhysicalInventory_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
                 "Test Book", "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 new BigDecimal("10.00"), null, null, -1, -1, true, true, 2023, null
         );
 
@@ -110,6 +116,7 @@ class CreateBookRequestValidationTest {
         String longTitle = "A".repeat(256);
         CreateBookRequest request = new CreateBookRequest(
                 longTitle, "Description", "1234567890",
+                "Test Author", "Fiction", null,
                 new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 

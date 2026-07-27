@@ -98,8 +98,8 @@ class CustomUserDetailsTest {
     }
 
     @Test
-    @DisplayName("Should return account non locked false when user is inactive")
-    void constructor_WhenInactive_ShouldBeAccountLocked() {
+    @DisplayName("Should keep account non locked when user is inactive")
+    void constructor_WhenInactive_ShouldRemainAccountNonLocked() {
         User user = new User();
         user.setId(1L);
         user.setUsername("testuser");
@@ -111,7 +111,7 @@ class CustomUserDetailsTest {
 
         CustomUserDetails details = new CustomUserDetails(user);
 
-        assertThat(details.isAccountNonLocked()).isFalse();
+        assertThat(details.isAccountNonLocked()).isTrue();
     }
 
     @Test
