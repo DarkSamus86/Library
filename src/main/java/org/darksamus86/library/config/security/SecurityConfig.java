@@ -3,6 +3,7 @@ package org.darksamus86.library.config.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -39,6 +40,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/actuator/health"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()
                         // Админские ручки
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                         // Всё остальное требует аутентификации
