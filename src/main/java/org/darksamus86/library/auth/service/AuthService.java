@@ -70,14 +70,9 @@ public class AuthService {
      * Смена пароля + отзыв всех старых сессий
      */
     @Transactional
-    public void changePassword(String username, String currentPassword, String newPassword) {
-        // 1. Проверяем текущий пароль и меняем на новый (через UserService)
-        userService.changePassword(username, currentPassword, newPassword);
-
-        // 2. Отзываем ВСЕ рефреш-токены пользователя (безопасность!)
-        tokenStorageService.revokeToken(username);
-
-        log.info("Password changed and all sessions revoked for user: {}", username);
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        userService.changePassword(userId, currentPassword, newPassword);
+        log.info("Password changed and all sessions revoked for userId={}", userId);
     }
 
     /**

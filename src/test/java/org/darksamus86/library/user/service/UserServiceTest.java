@@ -1,8 +1,9 @@
 package org.darksamus86.library.user.service;
 
+import org.darksamus86.library.auth.service.TokenStorageService;
 import org.darksamus86.library.user.common.exceptions.*;
+import org.darksamus86.library.user.dto.request.UpdateProfileRequest;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
-import org.darksamus86.library.user.dto.request.UserUpdateDto;
 import org.darksamus86.library.user.dto.response.UserResponseDto;
 import org.darksamus86.library.user.entity.Role;
 import org.darksamus86.library.user.entity.User;
@@ -11,12 +12,16 @@ import org.darksamus86.library.user.mapper.UserMapper;
 import org.darksamus86.library.user.repository.RoleRepo;
 import org.darksamus86.library.user.repository.UserRepo;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,8 +49,16 @@ class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private TokenStorageService tokenStorageService;
+
     @InjectMocks
     private UserService userService;
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
 
     private User createUser(Long id, String username, String email) {
         User user = new User();
@@ -159,101 +172,141 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should update user profile")
-    void updateUser_ShouldUpdateFields() {
+    @DisplayName("Should get current user from security context")
+    void getCurrentUser_ShouldReturnAuthenticatedUser() {
         User user = createUser(1L, "testuser", "test@test.com");
-        UserUpdateDto dto = new UserUpdateDto(null, null, null, "currentPassword", "NewFirst", "NewLast");
-        UserResponseDto expected = new UserResponseDto(1L, "test@test.com", "testuser", "NewFirst", "NewLast", true, false, Set.of());
+        UserResponseDto expected = new UserResponseDto(1L, "test@test.com", "testuser", "Test", "User", true, false, Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("testuser", null)
+        );
+
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(expected);
+
+        UserResponseDto result = userService.getCurrentUser();
+
+        assertThat(result).isEqualTo(expected);
+        verify(userRepository).findByUsername("testuser");
+    }
+
+    @Test
+    @DisplayName("Should throw when authenticated user record no longer exists")
+    void getCurrentUser_WhenRecordMissing_ShouldThrow() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("deleted-user", null)
+        );
+        when(userRepository.findByUsername("deleted-user")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(userService::getCurrentUser)
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining("Logged-in user");
+    }
+
+    @Test
+    @DisplayName("Should update current user profile")
+    void updateProfile_ShouldUpdateFields() {
+        User user = createUser(1L, "testuser", "test@test.com");
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "new@test.com", "newuser", "NewFirst", "NewLast"
+        );
+        UserResponseDto expected = new UserResponseDto(1L, "new@test.com", "newuser", "NewFirst", "NewLast", true, false, Set.of());
 
         when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
+        when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        doAnswer(invocation -> {
+            UpdateProfileRequest profile = invocation.getArgument(0);
+            User target = invocation.getArgument(1);
+            target.setEmail(profile.email());
+            target.setUsername(profile.username());
+            target.setFirstName(profile.firstName());
+            target.setLastName(profile.lastName());
+            return null;
+        }).when(userMapper).applyProfileUpdates(request, user);
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
         when(userMapper.toResponse(any(User.class))).thenReturn(expected);
 
-        UserResponseDto result = userService.updateUser(1L, dto);
+        UserResponseDto result = userService.updateProfile(1L, request);
 
-        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(expected);
+        assertThat(user.getEmail()).isEqualTo("new@test.com");
+        assertThat(user.getUsername()).isEqualTo("newuser");
+        assertThat(user.getFirstName()).isEqualTo("NewFirst");
+        assertThat(user.getLastName()).isEqualTo("NewLast");
+        verify(userMapper).applyProfileUpdates(request, user);
         verify(userRepository).save(user);
     }
 
     @Test
-    @DisplayName("Should throw when current password is wrong")
-    void updateUser_WhenPasswordMismatch_ShouldThrow() {
+    @DisplayName("Should throw when profile email already exists")
+    void updateProfile_WhenEmailExists_ShouldThrow() {
         User user = createUser(1L, "testuser", "test@test.com");
-        UserUpdateDto dto = new UserUpdateDto(null, null, null, "wrongPassword", null, null);
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "existing@test.com", null, null, null
+        );
 
         when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
-
-        assertThatThrownBy(() -> userService.updateUser(1L, dto))
-                .isInstanceOf(PasswordMismatchException.class);
-    }
-
-    @Test
-    @DisplayName("Should update email and reset verification")
-    void updateUser_WhenEmailChanged_ShouldResetVerification() {
-        User user = createUser(1L, "testuser", "test@test.com");
-        user.setIsEmailVerified(true);
-        UserUpdateDto dto = new UserUpdateDto("new@test.com", null, null, "currentPassword", null, null);
-
-        when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
-        when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-        when(userMapper.toResponse(any(User.class))).thenReturn(new UserResponseDto(1L, "new@test.com", "testuser", "Test", "User", true, false, Set.of()));
-
-        userService.updateUser(1L, dto);
-
-        assertThat(user.getEmail()).isEqualTo("new@test.com");
-        assertThat(user.getIsEmailVerified()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Should throw when new email already exists")
-    void updateUser_WhenNewEmailExists_ShouldThrow() {
-        User user = createUser(1L, "testuser", "test@test.com");
-        UserUpdateDto dto = new UserUpdateDto("existing@test.com", null, null, "currentPassword", null, null);
-
-        when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
         when(userRepository.existsByEmail("existing@test.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> userService.updateUser(1L, dto))
+        assertThatThrownBy(() -> userService.updateProfile(1L, request))
                 .isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Should update username")
-    void updateUser_WhenUsernameChanged_ShouldUpdate() {
+    @DisplayName("Should throw when profile username already exists")
+    void updateProfile_WhenUsernameExists_ShouldThrow() {
         User user = createUser(1L, "testuser", "test@test.com");
-        UserUpdateDto dto = new UserUpdateDto(null, "newuser", null, "currentPassword", null, null);
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                null, "existing-user", null, null
+        );
 
         when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-        when(userMapper.toResponse(any(User.class))).thenReturn(new UserResponseDto(1L, "test@test.com", "newuser", "Test", "User", true, false, Set.of()));
+        when(userRepository.existsByUsername("existing-user")).thenReturn(true);
 
-        userService.updateUser(1L, dto);
+        assertThatThrownBy(() -> userService.updateProfile(1L, request))
+                .isInstanceOf(UsernameAlreadyExistsException.class);
 
-        assertThat(user.getUsername()).isEqualTo("newuser");
+        verify(userRepository, never()).save(any());
+        verify(userMapper, never()).applyProfileUpdates(any(), any());
     }
 
     @Test
-    @DisplayName("Should update password")
-    void updateUser_WhenPasswordProvided_ShouldEncodeAndSet() {
+    @DisplayName("Should not run uniqueness queries when email and username are unchanged")
+    void updateProfile_WithUnchangedIdentity_ShouldSkipUniquenessChecks() {
         User user = createUser(1L, "testuser", "test@test.com");
-        UserUpdateDto dto = new UserUpdateDto(null, null, "newPassword123", "currentPassword", null, null);
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "test@test.com", "testuser", "Updated", null
+        );
+        UserResponseDto expected = new UserResponseDto(
+                1L, "test@test.com", "testuser", "Updated", "User",
+                true, false, Set.of()
+        );
 
         when(userRepository.findByIdWithRoles(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
-        when(passwordEncoder.encode("newPassword123")).thenReturn("newEncodedPassword");
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-        when(userMapper.toResponse(any(User.class))).thenReturn(new UserResponseDto(1L, "test@test.com", "testuser", "Test", "User", true, false, Set.of()));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(expected);
 
-        userService.updateUser(1L, dto);
+        UserResponseDto result = userService.updateProfile(1L, request);
 
-        assertThat(user.getPasswordHash()).isEqualTo("newEncodedPassword");
+        assertThat(result).isEqualTo(expected);
+        verify(userRepository, never()).existsByEmail(any());
+        verify(userRepository, never()).existsByUsername(any());
+        verify(userMapper).applyProfileUpdates(request, user);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    @DisplayName("Should throw when current user is not found")
+    void updateProfile_WhenUserNotFound_ShouldThrow() {
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "new@test.com", "newuser", null, null
+        );
+        when(userRepository.findByIdWithRoles(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.updateProfile(999L, request))
+                .isInstanceOf(UsernameNotFoundException.class);
     }
 
     @Test
@@ -287,38 +340,44 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should change password")
-    void changePassword_ShouldUpdatePassword() {
+    @DisplayName("Should change current user password by id and revoke refresh token")
+    void changePasswordById_ShouldUpdatePasswordAndRevokeToken() {
         User user = createUser(1L, "testuser", "test@test.com");
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("currentPassword", "hashedPassword")).thenReturn(true);
         when(passwordEncoder.encode("newPassword123")).thenReturn("newEncoded");
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(userRepository.save(user)).thenReturn(user);
 
-        userService.changePassword("testuser", "currentPassword", "newPassword123");
+        userService.changePassword(1L, "currentPassword", "newPassword123");
 
         assertThat(user.getPasswordHash()).isEqualTo("newEncoded");
+        verify(userRepository).save(user);
+        verify(tokenStorageService).revokeToken("testuser");
     }
 
     @Test
-    @DisplayName("Should throw when changing password with wrong current password")
-    void changePassword_WhenWrongCurrentPassword_ShouldThrow() {
+    @DisplayName("Should reject password change by id when current password is wrong")
+    void changePasswordById_WhenPasswordMismatch_ShouldThrow() {
         User user = createUser(1L, "testuser", "test@test.com");
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
-        assertThatThrownBy(() -> userService.changePassword("testuser", "wrongPassword", "newPassword123"))
-                .isInstanceOf(PasswordMismatchException.class);
+        assertThatThrownBy(() ->
+                userService.changePassword(1L, "wrongPassword", "newPassword123")
+        ).isInstanceOf(PasswordMismatchException.class);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(tokenStorageService);
     }
 
     @Test
     @DisplayName("Should throw when changing password for non-existent user")
     void changePassword_WhenUserNotFound_ShouldThrow() {
-        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.changePassword("nonexistent", "current", "new"))
-                .isInstanceOf(UserNotFoundException.class);
+        assertThatThrownBy(() -> userService.changePassword(999L, "current", "newPassword123"))
+                .isInstanceOf(UsernameNotFoundException.class);
     }
 }
