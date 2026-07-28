@@ -67,7 +67,7 @@ class BookMapperTest {
     @DisplayName("Should map CreateBookRequest to Book entity")
     void toEntity_ShouldMapCorrectly() {
         CreateBookRequest request = new CreateBookRequest(
-                "New Book", "Description", "1234567890",
+                "New Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), new BigDecimal("2.00"), new BigDecimal("5.00"),
                 5, -1, true, true, 2023, "http://cover.url"
         );
