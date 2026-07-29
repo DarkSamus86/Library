@@ -27,8 +27,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should be valid with all required fields")
     void validRequest_ShouldHaveNoViolations() {
         CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                "Test Author", "Fiction", "Programming",
+                "Test Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), new BigDecimal("2.00"), new BigDecimal("5.00"),
                 5, -1, true, true, 2023, "http://cover.url"
         );
@@ -42,8 +41,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should fail when title is blank")
     void blankTitle_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
-                "", "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                "", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 
@@ -57,8 +55,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should fail when pricePurchase is null")
     void nullPricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                "Test Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 null, null, null, 5, -1, true, true, 2023, null
         );
 
@@ -72,8 +69,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should fail when pricePurchase is negative")
     void negativePricePurchase_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                "Test Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("-1.00"), null, null, 5, -1, true, true, 2023, null
         );
 
@@ -86,8 +82,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should fail when physicalInventory is null")
     void nullPhysicalInventory_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                "Test Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), null, null, null, -1, true, true, 2023, null
         );
 
@@ -100,8 +95,7 @@ class CreateBookRequestValidationTest {
     @DisplayName("Should fail when physicalInventory is negative")
     void negativePhysicalInventory_ShouldHaveViolation() {
         CreateBookRequest request = new CreateBookRequest(
-                "Test Book", "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                "Test Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), null, null, -1, -1, true, true, 2023, null
         );
 
@@ -115,13 +109,42 @@ class CreateBookRequestValidationTest {
     void titleTooLong_ShouldHaveViolation() {
         String longTitle = "A".repeat(256);
         CreateBookRequest request = new CreateBookRequest(
-                longTitle, "Description", "1234567890",
-                "Test Author", "Fiction", null,
+                longTitle, "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
         );
 
         Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
 
         assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Should fail when author is blank")
+    void blankAuthor_ShouldHaveViolation() {
+        CreateBookRequest request = new CreateBookRequest(
+                "Test Book", "Description", "1234567890", "", "Fantasy", "Programming",
+                new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
+        );
+
+        Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("author");
+    }
+
+    @Test
+    @DisplayName("Should fail when genre is null")
+    void nullGenre_ShouldHaveViolation() {
+        CreateBookRequest request = new CreateBookRequest(
+                "Test Book", "Description", "1234567890", "Author", null, "Programming",
+                new BigDecimal("10.00"), null, null, 5, -1, true, true, 2023, null
+        );
+
+        Set<ConstraintViolation<CreateBookRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("genre");
     }
 }

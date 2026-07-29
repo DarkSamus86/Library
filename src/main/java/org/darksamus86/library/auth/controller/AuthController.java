@@ -10,6 +10,7 @@ import org.darksamus86.library.auth.dto.response.AuthResponseDto;
 import org.darksamus86.library.auth.service.AuthService;
 import org.darksamus86.library.config.security.JwtTokenProvider;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
+import org.darksamus86.library.user.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,8 +42,8 @@ public class AuthController {
             @RequestBody @Valid ChangePasswordRequestDto request,
             Authentication authentication) {
 
-        String username = authentication.getName();
-        authService.changePassword(username, request.currentPassword(), request.newPassword());
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        authService.changePassword(principal.getId(), request.currentPassword(), request.newPassword());
     }
 
     /**

@@ -8,6 +8,8 @@ import org.darksamus86.library.auth.dto.response.AuthResponseDto;
 import org.darksamus86.library.auth.service.AuthService;
 import org.darksamus86.library.config.GlobalExceptionHandler;
 import org.darksamus86.library.config.security.JwtTokenProvider;
+import org.darksamus86.library.user.entity.User;
+import org.darksamus86.library.user.security.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -83,9 +87,18 @@ class AuthControllerTest {
     @Test
     void changePassword_ShouldReturn204() throws Exception {
         ChangePasswordRequestDto request = new ChangePasswordRequestDto("currentPassword", "newPassword123");
-        var auth = new UsernamePasswordAuthenticationToken("testuser", "password");
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testuser");
+        user.setPasswordHash("hashedPassword");
+        user.setIsActive(true);
+        user.setUserRoles(List.of());
+        CustomUserDetails principal = new CustomUserDetails(user);
+        var auth = new UsernamePasswordAuthenticationToken(
+                principal, "password", principal.getAuthorities()
+        );
 
-        doNothing().when(authService).changePassword(eq("testuser"), eq("currentPassword"), eq("newPassword123"));
+        doNothing().when(authService).changePassword(eq(1L), eq("currentPassword"), eq("newPassword123"));
 
         mockMvc.perform(post("/auth/change-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +106,7 @@ class AuthControllerTest {
                         .principal(auth))
                 .andExpect(status().isNoContent());
 
-        verify(authService).changePassword("testuser", "currentPassword", "newPassword123");
+        verify(authService).changePassword(1L, "currentPassword", "newPassword123");
     }
 
     @Test

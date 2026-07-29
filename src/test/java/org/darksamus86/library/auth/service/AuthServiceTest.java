@@ -88,12 +88,11 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Should change password and revoke tokens")
-    void changePassword_ShouldUpdatePasswordAndRevokeTokens() {
-        authService.changePassword("testuser", "currentPassword", "newPassword123");
+    @DisplayName("Should delegate password change by user id")
+    void changePassword_ShouldDelegateByUserId() {
+        authService.changePassword(1L, "currentPassword", "newPassword123");
 
-        verify(userService).changePassword("testuser", "currentPassword", "newPassword123");
-        verify(tokenStorageService).revokeToken("testuser");
+        verify(userService).changePassword(1L, "currentPassword", "newPassword123");
     }
 
     @Test
