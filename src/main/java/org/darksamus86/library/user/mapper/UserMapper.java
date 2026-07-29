@@ -1,8 +1,8 @@
 package org.darksamus86.library.user.mapper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.user.dto.request.UpdateProfileRequest;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
-import org.darksamus86.library.user.dto.request.UserUpdateDto;
 import org.darksamus86.library.user.dto.response.UserResponseDto;
 import org.darksamus86.library.user.entity.Role;
 import org.darksamus86.library.user.entity.User;
@@ -60,14 +60,12 @@ public class UserMapper {
      * Частичное обновление Entity из DTO (для профиля)
      * Обновляет только переданные не-null поля
      */
-    public void applyUpdates(UserUpdateDto dto, User target) {
-        if (dto == null || target == null) return;
+    public void applyProfileUpdates(UpdateProfileRequest request, User target) {
+        if (request == null || target == null) return;
 
-        if (dto.email() != null) target.setEmail(dto.email());
-        if (dto.username() != null) target.setUsername(dto.username());
-        if (dto.firstName() != null) target.setFirstName(dto.firstName());
-        if (dto.lastName() != null) target.setLastName(dto.lastName());
-
-        // Пароль обрабатывается отдельно в сервисе из-за хеширования
+        if (request.email() != null) target.setEmail(request.email());
+        if (request.username() != null) target.setUsername(request.username());
+        if (request.firstName() != null) target.setFirstName(request.firstName());
+        if (request.lastName() != null) target.setLastName(request.lastName());
     }
 }

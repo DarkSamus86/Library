@@ -2,9 +2,10 @@ package org.darksamus86.library.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.darksamus86.library.auth.service.TokenStorageService;
 import org.darksamus86.library.user.common.exceptions.*;
+import org.darksamus86.library.user.dto.request.UpdateProfileRequest;
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
-import org.darksamus86.library.user.dto.request.UserUpdateDto;
 import org.darksamus86.library.user.dto.response.UserResponseDto;
 import org.darksamus86.library.user.entity.Role;
 import org.darksamus86.library.user.entity.User;
@@ -12,6 +13,8 @@ import org.darksamus86.library.user.entity.UserRole;
 import org.darksamus86.library.user.mapper.UserMapper;
 import org.darksamus86.library.user.repository.RoleRepo;
 import org.darksamus86.library.user.repository.UserRepo;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +29,8 @@ public class UserService {
     private final RoleRepo roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final TokenStorageService tokenStorageService;
 
-    // ✅ РЕГИСТРАЦИЯ
     public UserResponseDto register(UserRegistrationDto dto) {
         if (userRepository.existsByEmail(dto.email()))
             throw new EmailAlreadyExistsException(dto.email());
@@ -47,56 +50,80 @@ public class UserService {
         return userMapper.toResponse(saved);
     }
 
-    // ✅ ПОЛУЧЕНИЕ ПОЛЬЗОВАТЕЛЯ
     public UserResponseDto getUserById(Long id) {
         User user = userRepository.findByIdWithRoles(id)
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
         log.debug("Fetched user info: id={}", id);
+
         return userMapper.toResponse(user);
     }
 
-    // ✅ ОБНОВЛЕНИЕ ПРОФИЛЯ
-    public UserResponseDto updateUser(Long id, UserUpdateDto dto) {
-        User user = userRepository.findByIdWithRoles(id)
-                .orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
+    public UserResponseDto getCurrentUser() {
+        String currentPrincipalName = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+        log.debug("Fetched user info: name={}", currentPrincipalName);
 
-        // Обязательная проверка текущего пароля
-        if (!passwordEncoder.matches(dto.currentPassword(), user.getPasswordHash())) {
+        User user = userRepository.findByUsername(currentPrincipalName)
+                .orElseThrow(() -> new UsernameNotFoundException("Logged-in user record not found"));
+
+
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(
+            Long userId,
+            String currentPassword,
+            String newPassword
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(userId.toString()));
+
+        if (!passwordEncoder.matches(
+                currentPassword,
+                user.getPasswordHash()
+        )) {
             throw new PasswordMismatchException();
         }
 
-        boolean emailChanged = dto.email() != null && !dto.email().equals(user.getEmail());
-        boolean usernameChanged = dto.username() != null && !dto.username().equals(user.getUsername());
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Update password of user with id: {}", userId);
 
-        if (emailChanged) {
-            if (userRepository.existsByEmail(dto.email()))
-                throw new EmailAlreadyExistsException(dto.email());
-            user.setEmail(dto.email());
-            user.setIsEmailVerified(false); // Сброс верификации
-            log.info("Email changed for userId={}", id);
-        }
-
-        if (usernameChanged) {
-            if (userRepository.existsByUsername(dto.username()))
-                throw new UsernameAlreadyExistsException(dto.username());
-            user.setUsername(usernameChanged ? dto.username() : user.getUsername());
-            log.info("Username changed for userId={}", id);
-        }
-
-        if (dto.password() != null) {
-            user.setPasswordHash(passwordEncoder.encode(dto.password()));
-            log.info("Password updated for userId={}", id);
-        }
-
-        // Обновляем остальные поля через маппер
-        userMapper.applyUpdates(dto, user);
-
-        User updated = userRepository.save(user);
-        log.info("User profile updated: id={}", id);
-        return userMapper.toResponse(updated);
+        tokenStorageService.revokeToken(user.getUsername());
     }
 
-    // ✅ УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (только админ)
+    @Transactional
+    public UserResponseDto updateProfile(
+            Long currentUserId,
+            UpdateProfileRequest request
+    ) {
+        User user = userRepository.findByIdWithRoles(currentUserId)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(currentUserId.toString()));
+
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new EmailAlreadyExistsException(request.email());
+            }
+        }
+
+        if (request.username() != null && !request.username().equals(user.getUsername())) {
+            if (userRepository.existsByUsername(request.username())) {
+                throw new UsernameAlreadyExistsException(request.username());
+            }
+        }
+
+        userMapper.applyProfileUpdates(request, user);
+        // Временно закоменчено до реализации сервиса уведомлений
+        // user.setIsEmailVerified(false);
+
+        log.info("Updated profile user: id={}", currentUserId);
+
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(String.valueOf(id));
@@ -108,26 +135,6 @@ public class UserService {
 
         userRepository.deleteById(id);
         log.info("User deleted by admin: id={}", id);
-    }
-
-    /**
-     * Только смена пароля (без побочной логики)
-     */
-    @Transactional
-    public void changePassword(String username, String currentPassword, String newPassword) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-
-        // Проверка текущего пароля
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new PasswordMismatchException();
-        }
-
-        // Установка нового пароля
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-
-        log.info("Password changed for user: {}", username);
     }
 
     private void addRoleToUser(User user, Role role) {

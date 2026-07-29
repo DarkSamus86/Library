@@ -50,8 +50,7 @@ class BookControllerTest {
     @Test
     void getBookById_ShouldReturn200() throws Exception {
         ResponseGetBook mockResponse = new ResponseGetBook(
-                1L, "Mock Title", "Desc",
-                "1234567890123",
+                1L, "Mock Title", "Desc", "9780134685991",
                 new BigDecimal("10"), null, null, true, true, 10, -1, true, true, 2020, null, 0, 0
         );
 
@@ -66,14 +65,12 @@ class BookControllerTest {
     @Test
     void createBook_ShouldReturn201() throws Exception {
         CreateBookRequest request = new CreateBookRequest(
-                "New Book", "Desc", "1234567890123",
-                "Test Author", "Fiction", null,
+                "New Book", "Desc", "1234567890123", "Test Author", "Fantasy", "Programming",
                 new BigDecimal("10"), null, null, 5, -1, true, true, 2023, null
         );
 
         ResponseGetBook createdResponse = new ResponseGetBook(
-                1L, "New Book", "Desc",
-                "1234567890123",
+                1L, "New Book", "Desc", "1234567890123",
                 new BigDecimal("10"), null, null, true, true, 5, -1, true, true, 2023, null, 0, 0
         );
 
@@ -106,8 +103,7 @@ class BookControllerTest {
                 new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00")
         );
         ResponseGetBook response = new ResponseGetBook(
-                1L, "Book Title", "Desc",
-                "1234567890123",
+                1L, "Book Title", "Desc", "9780134685991",
                 new BigDecimal("19.99"), new BigDecimal("3.99"), new BigDecimal("10.00"), true, true, 5, -1, true, true, 2023, null, 0, 0
         );
 

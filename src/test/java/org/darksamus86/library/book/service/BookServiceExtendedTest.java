@@ -42,7 +42,7 @@ class BookServiceExtendedTest {
     @DisplayName("Should throw when creating book with duplicate ISBN")
     void createBook_WhenDuplicateIsbn_ShouldThrow() {
         var request = new org.darksamus86.library.book.dto.request.CreateBookRequest(
-                "Book", "Desc", "123", "Test Author", "Fiction", null,
+                "Book", "Desc", "123", "Author", "Fantasy", "Programming",
                 BigDecimal.TEN, null, null, 5, -1, true, true, 2023, null);
 
         when(bookRepository.existsByIsbn("123")).thenReturn(true);
@@ -67,7 +67,8 @@ class BookServiceExtendedTest {
         updatedBook.setTitle("New Title");
 
         ResponseGetBook response = new ResponseGetBook(1L, "New Title", "New Desc",
-                null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+                "isbn-1", BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
 
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(any(Book.class))).thenReturn(updatedBook);
@@ -160,7 +161,9 @@ class BookServiceExtendedTest {
         book.setTitle("Java Programming");
         book.setIsActive(true);
 
-        ResponseGetBook response = new ResponseGetBook(1L, "Java Programming", null, null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0);
+        ResponseGetBook response = new ResponseGetBook(1L, "Java Programming", null, null,
+                null, null, null, true, true, 0, -1,
+                true, true, null, null, 0, 0);
 
         when(bookRepository.findByTitleContainingIgnoreCase("java")).thenReturn(List.of(book));
         when(bookMapper.toResponse(book)).thenReturn(response);
@@ -185,7 +188,9 @@ class BookServiceExtendedTest {
         inactiveBook.setIsActive(false);
 
         when(bookRepository.findByTitleContainingIgnoreCase("book")).thenReturn(List.of(activeBook, inactiveBook));
-        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active Book", null, null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0));
+        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(
+                1L, "Active Book", null, null, null, null, null,
+                true, true, 0, -1, true, true, null, null, 0, 0));
 
         List<ResponseGetBook> result = bookService.searchBooksByTitle("book");
 
@@ -200,7 +205,9 @@ class BookServiceExtendedTest {
         book.setId(1L);
         book.setTitle("Book 1");
 
-        ResponseGetBook response = new ResponseGetBook(1L, "Book 1", null, null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0);
+        ResponseGetBook response = new ResponseGetBook(1L, "Book 1", null, null,
+                null, null, null, true, true, 0, -1,
+                true, true, null, null, 0, 0);
         PageRequest pageable = PageRequest.of(0, 10);
         Page<Book> page = new PageImpl<>(List.of(book), pageable, 1);
 
@@ -227,7 +234,9 @@ class BookServiceExtendedTest {
         inactiveBook.setIsActive(false);
 
         when(bookRepository.findAll()).thenReturn(List.of(activeBook, inactiveBook));
-        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(1L, "Active", null, null, null, null, null, true, true, 0, -1, true, true, null, null, 0, 0));
+        when(bookMapper.toResponse(activeBook)).thenReturn(new ResponseGetBook(
+                1L, "Active", null, null, null, null, null,
+                true, true, 0, -1, true, true, null, null, 0, 0));
 
         List<ResponseGetBook> result = bookService.getAllBooks();
 

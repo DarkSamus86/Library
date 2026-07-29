@@ -1,7 +1,7 @@
 package org.darksamus86.library.user.mapper;
 
 import org.darksamus86.library.user.dto.request.UserRegistrationDto;
-import org.darksamus86.library.user.dto.request.UserUpdateDto;
+import org.darksamus86.library.user.dto.request.UpdateProfileRequest;
 import org.darksamus86.library.user.dto.response.UserResponseDto;
 import org.darksamus86.library.user.entity.Role;
 import org.darksamus86.library.user.entity.User;
@@ -91,17 +91,19 @@ class UserMapperTest {
     }
 
     @Test
-    @DisplayName("Should apply updates from UserUpdateDto to User")
-    void applyUpdates_ShouldUpdateFields() {
+    @DisplayName("Should apply updates from UpdateProfileRequest to User")
+    void applyProfileUpdates_ShouldUpdateFields() {
         User user = new User();
         user.setEmail("old@test.com");
         user.setUsername("olduser");
         user.setFirstName("Old");
         user.setLastName("Old");
 
-        UserUpdateDto dto = new UserUpdateDto("new@test.com", "newuser", null, "currentPassword", "New", "New");
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "new@test.com", "newuser", "New", "New"
+        );
 
-        userMapper.applyUpdates(dto, user);
+        userMapper.applyProfileUpdates(request, user);
 
         assertThat(user.getEmail()).isEqualTo("new@test.com");
         assertThat(user.getUsername()).isEqualTo("newuser");
@@ -111,16 +113,16 @@ class UserMapperTest {
 
     @Test
     @DisplayName("Should not update null fields")
-    void applyUpdates_WhenNullFields_ShouldNotUpdate() {
+    void applyProfileUpdates_WhenNullFields_ShouldNotUpdate() {
         User user = new User();
         user.setEmail("test@test.com");
         user.setUsername("testuser");
         user.setFirstName("Test");
         user.setLastName("User");
 
-        UserUpdateDto dto = new UserUpdateDto(null, null, null, "currentPassword", null, null);
+        UpdateProfileRequest request = new UpdateProfileRequest(null, null, null, null);
 
-        userMapper.applyUpdates(dto, user);
+        userMapper.applyProfileUpdates(request, user);
 
         assertThat(user.getEmail()).isEqualTo("test@test.com");
         assertThat(user.getUsername()).isEqualTo("testuser");
@@ -128,20 +130,22 @@ class UserMapperTest {
 
     @Test
     @DisplayName("Should do nothing when DTO is null")
-    void applyUpdates_WhenNullDto_ShouldDoNothing() {
+    void applyProfileUpdates_WhenNullRequest_ShouldDoNothing() {
         User user = new User();
         user.setEmail("test@test.com");
 
-        userMapper.applyUpdates(null, user);
+        userMapper.applyProfileUpdates(null, user);
 
         assertThat(user.getEmail()).isEqualTo("test@test.com");
     }
 
     @Test
     @DisplayName("Should do nothing when target is null")
-    void applyUpdates_WhenNullTarget_ShouldDoNothing() {
-        UserUpdateDto dto = new UserUpdateDto("test@test.com", "testuser", null, "currentPassword", "Test", "User");
+    void applyProfileUpdates_WhenNullTarget_ShouldDoNothing() {
+        UpdateProfileRequest request = new UpdateProfileRequest(
+                "test@test.com", "testuser", "Test", "User"
+        );
 
-        userMapper.applyUpdates(dto, null);
+        userMapper.applyProfileUpdates(request, null);
     }
 }

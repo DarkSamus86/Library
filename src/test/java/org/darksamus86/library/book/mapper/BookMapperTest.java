@@ -22,7 +22,6 @@ class BookMapperTest {
         book.setId(1L);
         book.setTitle("Test Book");
         book.setDescription("Test Description");
-        book.setIsbn("1234567890");
         book.setPricePurchase(new BigDecimal("10.00"));
         book.setPriceRental(new BigDecimal("2.00"));
         book.setDepositAmount(new BigDecimal("5.00"));
@@ -43,7 +42,6 @@ class BookMapperTest {
         assertThat(result.id()).isEqualTo(1L);
         assertThat(result.title()).isEqualTo("Test Book");
         assertThat(result.description()).isEqualTo("Test Description");
-        assertThat(result.isbn()).isEqualTo("1234567890");
         assertThat(result.pricePurchase()).isEqualTo(new BigDecimal("10.00"));
         assertThat(result.priceRental()).isEqualTo(new BigDecimal("2.00"));
         assertThat(result.depositAmount()).isEqualTo(new BigDecimal("5.00"));
@@ -69,8 +67,7 @@ class BookMapperTest {
     @DisplayName("Should map CreateBookRequest to Book entity")
     void toEntity_ShouldMapCorrectly() {
         CreateBookRequest request = new CreateBookRequest(
-                "New Book", "Description", "1234567890",
-                "Test Author", "Fiction", "Programming",
+                "New Book", "Description", "1234567890", "Author", "Fantasy", "Programming",
                 new BigDecimal("10.00"), new BigDecimal("2.00"), new BigDecimal("5.00"),
                 5, -1, true, true, 2023, "http://cover.url"
         );

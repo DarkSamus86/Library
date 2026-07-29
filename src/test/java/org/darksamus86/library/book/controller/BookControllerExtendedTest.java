@@ -52,7 +52,9 @@ class BookControllerExtendedTest {
 
     @Test
     void getAllBooks_WithPagination_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, "isbn-1",
+                BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
         Page<ResponseGetBook> page = new PageImpl<>(List.of(book), PageRequest.of(0, 10), 1);
         when(bookService.getAllBooks(any())).thenReturn(page);
 
@@ -64,7 +66,9 @@ class BookControllerExtendedTest {
 
     @Test
     void getAllBooksList_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+        ResponseGetBook book = new ResponseGetBook(1L, "Book 1", null, "isbn-1",
+                BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
         when(bookService.getAllBooks()).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/v1/books/all"))
@@ -75,7 +79,9 @@ class BookControllerExtendedTest {
     @Test
     void updateBook_ShouldReturn200() throws Exception {
         UpdateBookRequest request = new UpdateBookRequest("Updated Title", null, null, null, null, null, null, -1, true, true, null, null, null, null, null);
-        ResponseGetBook response = new ResponseGetBook(1L, "Updated Title", null, null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+        ResponseGetBook response = new ResponseGetBook(1L, "Updated Title", null, "isbn-1",
+                BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
         when(bookService.updateBook(eq(1L), any(UpdateBookRequest.class))).thenReturn(response);
 
         mockMvc.perform(put("/api/v1/books/1")
@@ -88,7 +94,9 @@ class BookControllerExtendedTest {
     @Test
     void partialUpdateBook_ShouldReturn200() throws Exception {
         UpdateBookRequest request = new UpdateBookRequest("Partial Title", null, null, null, null, null, null, -1, true, true, null, null, null, null, null);
-        ResponseGetBook response = new ResponseGetBook(1L, "Partial Title", null, null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+        ResponseGetBook response = new ResponseGetBook(1L, "Partial Title", null, "isbn-1",
+                BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
         when(bookService.updateBook(eq(1L), any(UpdateBookRequest.class))).thenReturn(response);
 
         mockMvc.perform(patch("/api/v1/books/1")
@@ -116,7 +124,9 @@ class BookControllerExtendedTest {
 
     @Test
     void searchBooks_ShouldReturn200() throws Exception {
-        ResponseGetBook book = new ResponseGetBook(1L, "Java Book", null, null, BigDecimal.TEN, null, null, true, true, 5, -1, true, true, 2023, null, 0, 0);
+        ResponseGetBook book = new ResponseGetBook(1L, "Java Book", null, "isbn-1",
+                BigDecimal.TEN, null, null, true, true, 5, -1,
+                true, true, 2023, null, 0, 0);
         when(bookService.searchBooksByTitle("java")).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/v1/books/search").param("title", "java"))
